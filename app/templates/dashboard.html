@@ -10,7 +10,7 @@
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
 
         {% if current_user.rol == 'dueno' %}
-            <a href="#" style="text-decoration:none;">
+            <a href="{{ url_for('mascotas.listar')}}" style="text-decoration:none;">
                 <div class="card">🐶 Mis mascotas</div>
             </a>
             <a href="#" style="text-decoration:none;">
