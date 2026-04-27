@@ -4,8 +4,14 @@
 <div class="container">
     <h2>Crear nueva mascota</h2>
 
+    <div class="flash-messages">
+        {% for msg in get_flashed_messages() %}
+            <div class="flash">{{ msg }}</div>
+        {% endfor %}
+    </div>
+    
     <form method="POST">
-
+        
         <div class="form-group">
             <label>Nombre</label>
             <input type="text" name="nombre" placeholder="Ej: pepe" required>
@@ -25,6 +31,10 @@
         <div class="form-group">
             <label>Peso</label>
             <input type="number" step="0.1" name="peso" placeholder="Ej: 6.7" required>
+        </div>
+        <div class="form-group">
+            <label>DNI de Dueño</label>
+            <input type="number" name="dueno_dni" placeholder="Ej: 56124353" required>
         </div>
 
         <button type="submit">Guardar</button>
