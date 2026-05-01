@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container">
+    <h2>Mis mascotas</h2>
+
+    {% if current_user.rol != 'dueno' %}
+    <a href="{{ url_for('mascotas.agregarMascota') }}">Agregar mascota</a>
+    {% endif %}
+
+    {%for mascota in mascotas%}
+    <div class="card">
+        <p>Nombre: {{mascota.nombre}}</p>
+        <p>Especie: {{mascota.especie}}</p>
+        <p>Raza: {{mascota.raza}}</p>
+        <p>Edad: {{mascota.edad}}</p>
+        <p>Peso: {{mascota.peso}}</p>
+        {% if current_user.rol != 'dueno' %}
+        <a href="{{ url_for('mascotas.editarMascota', id=mascota.id) }}">Editar</a>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+
+{%endblock%}

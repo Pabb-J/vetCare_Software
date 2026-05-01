@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class= "container">
+    <h2>Editar Mascota</h2>
+
+    <form method="POST">
+
+        <div class="form-group">
+            <label>Nombre</label>
+            <input type="text" name="nombre" placeholder="Ej: pepe" value="{{mascotaBuscada.nombre}}" required>
+        </div>
+        <div class="form-group">
+            <label>Especie</label>
+            <input type="text" name="especie" placeholder="Ej: Perro" value="{{mascotaBuscada.especie}}" required>
+        </div>
+        <div class="form-group">
+            <label>Raza</label>
+            <input type="text" name="raza" placeholder="Ej: caniche" value="{{mascotaBuscada.raza}}" required>
+        </div>
+        <div class="form-group">
+            <label>Edad</label>
+            <input type="number" name="edad" placeholder="Ej: 7" value="{{mascotaBuscada.edad}}" required>
+        </div>
+        <div class="form-group">
+            <label>Peso</label>
+            <input type="number" step="0.1" name="peso" placeholder="Ej: 6.7" value="{{mascotaBuscada.peso}}" required>
+        </div>
+        <div class="form-group">
+            <label>DNI de Dueño</label>
+            <input type="number" name="dueno_dni" placeholder="Ej: 56124353" value="{{mascotaBuscada.dueno_dni}}" required>
+        </div>
+
+        <button type="submit">Guardar cambios</button>
+
+        <div class="link-text">
+            <a href="{{ url_for('mascotas.listar') }}">Volver a mis mascotas</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div style="max-width: 800px; margin: 60px auto; padding: 0 1rem;">
+
+    <h2 style="color: #5ba4a4; margin-bottom: 1.5rem;">
+        Bienvenido, {{ current_user.nombre }} 👋
+    </h2>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
+
+        {% if current_user.rol == 'dueno' %}
+            <a href="{{ url_for('mascotas.listar')}}" style="text-decoration:none;">
+                <div class="card">🐶 Mis mascotas</div>
+            </a>
+            <a href="#" style="text-decoration:none;">
+                <div class="card">📅 Mis turnos</div>
+            </a>
+            <a href="#" style="text-decoration:none;">
+                <div class="card">🛒 Tienda</div>
+            </a>
+
+        {% elif current_user.rol == 'veterinario' %}
+            <a href="#" style="text-decoration:none;">
+                <div class="card">📋 Mi agenda</div>
+            </a>
+            <a href="#" style="text-decoration:none;">
+                <div class="card">🩺 Registrar diagnóstico</div>
+            </a>
+            <a href="{{ url_for('mascotas.listar')}}" style="text-decoration:none;">
+                <div class="card">Registrar mascota</div>
+            </a>
+
+        {% elif current_user.rol == 'admin' %}
+            <a href="#" style="text-decoration:none;">
+                <div class="card">👥 Gestionar usuarios</div>
+            </a>
+            <a href="#" style="text-decoration:none;">
+                <div class="card">📅 Agenda general</div>
+            </a>
+            <a href="#" style="text-decoration:none;">
+                <div class="card">📦 Inventario</div>
+            </a>
+        {% endif %}
+
+    </div>
+</div>
+
+<style>
+    .card {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        text-align: center;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #333;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    }
+</style>
+
+{% endblock %}
