@@ -1,0 +1,20 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Mis Turnos</title>
+</head>
+<body>
+    <h1>Mis Turnos</h1>
+    <a href="{{ url_for('turnos.agendar_turno') }}">Agendar nuevo turno</a>
+    <ul>
+        {% for turno in turnos %}
+        <li>
+            Fecha: {{ turno.fecha }} - Hora: {{ turno.hora }} - Estado: {{ turno.estado }}
+            (Mascota: {{ turno.mascota.nombre }}, Veterinario: {{ turno.veterinario.nombre }})
+        </li>
+        {% else %}
+        <li>No tenés turnos registrados.</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

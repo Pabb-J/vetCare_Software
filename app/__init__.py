@@ -1,4 +1,4 @@
-from flask import Flask
+﻿from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 
@@ -20,6 +20,9 @@ def create_app():
 
     from app.routes.mascotas import mascotas
     app.register_blueprint(mascotas)
+
+    from app.routes.turnos import turnos
+    app.register_blueprint(turnos)
 
     return app
 
