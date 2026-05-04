@@ -1,4 +1,4 @@
-from flask import Flask
+﻿from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 
@@ -15,11 +15,22 @@ def create_app():
 
     from app.models.mascota import Mascota
 
+    @app.template_filter('strftime')
+    def strftime_filter(date_obj, format_str='%d/%m/%Y'):
+        if date_obj:
+            return date_obj.strftime(format_str)
+        return ''
+
+    from app.models.turno import Turno
+
     from app.routes.auth import auth
     app.register_blueprint(auth)
 
     from app.routes.mascotas import mascotas
     app.register_blueprint(mascotas)
+
+    from app.routes.turnos import turnos
+    app.register_blueprint(turnos)
 
     return app
 

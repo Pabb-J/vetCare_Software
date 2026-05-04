@@ -1,0 +1,97 @@
+﻿{% extends 'base.html' %}
+{% block content %}
+
+<div class="container" style="max-width: 1000px; margin: 40px auto; padding: 2rem;">
+    <h2 style="color: #5ba4a4;">📅 Solicitar Turno</h2>
+
+    {% if mascotas %}
+        <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+            
+            <div class="form-group" style="margin-bottom: 2rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">🐾 Selecciona tu mascota:</label>
+                <select id="mascota-filter" style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem;">
+                    <option value="">-- Todas las mascotas --</option>
+                    {% for mascota in mascotas %}
+                        <option value="{{ mascota.id }}">{{ mascota.nombre }} ({{ mascota.especie }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            {% if turnos_disponibles %}
+                <p style="color: #666; margin-bottom: 2rem;">Se encontraron <strong>{{ turnos_disponibles|length }}</strong> turnos disponibles:</p>
+
+                {% set dias = {} %}
+                {% for turno in turnos_disponibles %}
+                    {% if turno.fecha not in dias %}
+                        {% set _ = dias.update({turno.fecha: []}) %}
+                    {% endif %}
+                    {% set _ = dias[turno.fecha].append(turno) %}
+                {% endfor %}
+
+                {% for fecha in dias|sort %}
+                    <div class="dia-section">
+                        <h3 class="dia-header">
+                            📅 {{ fecha|strftime('%A, %d de %B de %Y') }}
+                        </h3>
+
+                        <div class="turno-grid">
+                            {% for turno in dias[fecha] %}
+                            <div class="turno-card">
+                                
+                                <div style="margin-bottom: 1rem;">
+                                    <p class="turno-hora">
+                                        🕐 {{ turno.hora }}
+                                    </p>
+                                    <p class="turno-vet">
+                                        👨‍⚕️ {{ turno.veterinario.nombre }}
+                                    </p>
+                                </div>
+
+                                <form method="POST">
+                                    <input type="hidden" name="turno_id" value="{{ turno.id }}">
+                                    
+                                    <select name="mascota_id" required class="turno-select">
+                                        <option value="">Mascota</option>
+                                        {% for mascota in mascotas %}
+                                            <option value="{{ mascota.id }}">{{ mascota.nombre }}</option>
+                                        {% endfor %}
+                                    </select>
+
+                                    <button type="submit" class="turno-button">
+                                        Agendar
+                                    </button>
+                                </form>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+
+            {% else %}
+                <div style="background: #fff3cd; border: 1px solid #ffc107; padding: 2rem; border-radius: 12px; text-align: center;">
+                    <p style="color: #856404; font-size: 1.1rem;">⚠️ No hay turnos disponibles en este momento.</p>
+                </div>
+            {% endif %}
+
+        </div>
+
+        <div style="text-align: center; margin-top: 2rem;">
+            <a href="{{ url_for('turnos.listar_turnos') }}" style="color: #5ba4a4; text-decoration: none; font-weight: 600;">
+                ← Volver a mis turnos
+            </a>
+        </div>
+
+    {% else %}
+        <div style="background: white; padding: 3rem; border-radius: 12px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+            <p style="color: #999; font-size: 1.1rem; margin-bottom: 1.5rem;">🐾 Primero debes registrar una mascota para agendar un turno.</p>
+            <a href="{{ url_for('mascotas.agregarMascota') }}" 
+               style="display: inline-block; background: #5ba4a4; color: white; padding: 0.75rem 1.5rem; 
+                      border-radius: 6px; text-decoration: none; font-weight: 600;">
+                Crear mi primera mascota
+            </a>
+        </div>
+    {% endif %}
+
+</div>
+
+{% endblock %}

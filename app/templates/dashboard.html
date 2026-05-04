@@ -13,7 +13,7 @@
             <a href="{{ url_for('mascotas.listar')}}" style="text-decoration:none;">
                 <div class="card">🐶 Mis mascotas</div>
             </a>
-            <a href="#" style="text-decoration:none;">
+            <a href="{{ url_for('turnos.listar_turnos')}}" style="text-decoration:none;">
                 <div class="card">📅 Mis turnos</div>
             </a>
             <a href="#" style="text-decoration:none;">
@@ -21,7 +21,7 @@
             </a>
 
         {% elif current_user.rol == 'veterinario' %}
-            <a href="#" style="text-decoration:none;">
+            <a href="{{ url_for('turnos.listar_turnos')}}" style="text-decoration:none;">
                 <div class="card">📋 Mi agenda</div>
             </a>
             <a href="#" style="text-decoration:none;">
@@ -40,6 +40,9 @@
             </a>
             <a href="#" style="text-decoration:none;">
                 <div class="card">📦 Inventario</div>
+            </a>
+            <a href="{{url_for('turnos.generarTurnos')}}" style="text-decoration:none;">
+                <div class="card">Generar turnos</div>
             </a>
         {% endif %}
 

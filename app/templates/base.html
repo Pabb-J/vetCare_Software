@@ -120,6 +120,101 @@
             background-color: #eafaf1;
             color: #1e8449;
         }
+
+        .estado-ocupado {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        
+        .estado-disponible {
+            background: #e8f5e9;
+            color: #388e3c;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        
+        .estado-cancelado {
+            background: #ffebee;
+            color: #c62828;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .turno-card {
+        background: #f9f9f9;
+        border: 2px solid #e0e0e0;
+        border-radius: 12px;
+        padding: 1rem;
+        transition: all 0.3s;
+    }
+
+    .turno-card:hover {
+        border-color: #5ba4a4;
+        box-shadow: 0 4px 12px rgba(91, 164, 164, 0.2);
+    }
+
+    .turno-hora {
+        color: #5ba4a4;
+        font-weight: 600;
+        font-size: 1.3rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .turno-vet {
+        color: #999;
+        font-size: 0.85rem;
+    }
+
+    .turno-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+
+    .dia-header {
+        color: #5ba4a4;
+        padding: 1rem;
+        background: #f0f7f7;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+
+    .dia-section {
+        margin-bottom: 2rem;
+    }
+
+    .turno-select {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .turno-button {
+        width: 100%;
+        padding: 0.6rem;
+        background: #5ba4a4;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: background 0.3s;
+    }
+
+    .turno-button:hover {
+        background: #4a8f8f;
+    }
     </style>
 </head>
 <body>
@@ -136,6 +231,18 @@
         {% endif %}
     </div>
 </nav>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <div class="flash-messages" style="max-width: 900px; margin: 20px auto; padding: 0 1rem;">
+            {% for category, message in messages %}
+                <div class="flash {% if category == 'success' %}success{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
 
 {% block content %}{% endblock %}
 
