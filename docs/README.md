@@ -24,3 +24,9 @@ Cada archivo dentro de `docs/` está orientado a un público distinto:
 - **INSTALLATION.md** → guía técnica para instalar y ejecutar el sistema.
 - **ARCHITECTURE.md** → explicación de la estructura interna del código.
 - **USER_MANUAL.md** → guía práctica para usuarios finales (veterinarios y clientes).
+
+## Documentación
+
+- [Manual de instalación](docs/INSTALLATION.md)
+- [Arquitectura del sistema](docs/ARCHITECTURE.md)
+- [Manual de usuario](docs/USER_MANUAL.md)
