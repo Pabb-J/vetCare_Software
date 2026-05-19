@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div style="max-width: 900px; margin: 0 auto;">
+
+    <h2 style="color: #4a9b9b; margin-bottom: 0.4rem; font-family: 'Playfair Display', serif;">
+        Bienvenido, {{ current_user.nombre }} 👋
+    </h2>
+    <p style="color: #718096; margin-bottom: 2rem; font-size: 0.9rem;">
+        {{ current_user.rol | capitalize }} — {{ current_user.correo }}
+    </p>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+
+        {% if current_user.rol == 'dueno' %}
+            <a href="{{ url_for('turnos.agendar_turno')}}" style="text-decoration:none;">
+                <div class="card">🗓️ Sacar turno</div>
+            </a>
+            <a href="{{ url_for('turnos.listar_turnos')}}" style="text-decoration:none;">
+                <div class="card">📅 Mis turnos</div>
+            </a>
+            <a href="{{ url_for('auth.perfil_dueno')}}" style="text-decoration:none;">
+                <div class="card">👤 Mi perfil</div>
+            </a>
+            <a href="#" style="text-decoration:none;">
+                <div class="card">🛒 Tienda</div>
+            </a>
+
+        {% elif current_user.rol == 'veterinario' %}
+            <a href="{{ url_for('veterinario.agenda')}}" style="text-decoration:none;">
+                <div class="card">📅 Mi Agenda</div>
+            </a>
+            <a href="{{ url_for('veterinario.nuevo_diagnostico')}}" style="text-decoration:none;">
+                <div class="card">🩺 Nuevo Diagnóstico</div>
+            </a>
+            <a href="{{ url_for('veterinario.registrar_mascota')}}" style="text-decoration:none;">
+                <div class="card">🐾 Registrar Mascota</div>
+            </a>
+            <a href="{{ url_for('veterinario.perfil')}}" style="text-decoration:none;">
+                <div class="card">👤 Mi Perfil</div>
+            </a>
+            <!-- Historia clínica: lista todas las mascotas -->
+            <a href="{{ url_for('mascotas.listar')}}" style="text-decoration:none;">
+                <div class="card">📋 Historias Clínicas</div>
+            </a>
+
+        {% elif current_user.rol == 'admin' %}
+            <a href="{{ url_for('turnos.generarTurnos')}}" style="text-decoration:none;">
+                <div class="card">⚙️ Generar Turnos</div>
+            </a>
+            <a href="{{ url_for('turnos.listar_turnos')}}" style="text-decoration:none;">
+                <div class="card">📅 Ver Turnos</div>
+            </a>
+            <a href="{{ url_for('mascotas.listar')}}" style="text-decoration:none;">
+                <div class="card">🐾 Mascotas</div>
+            </a>
+        {% endif %}
+
+    </div>
+</div>
+
+{% endblock %}
