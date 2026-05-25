@@ -1,24 +1,26 @@
-﻿from flask import Flask
+from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_mail import Mail
 
 db = SQLAlchemy()
 login_manager = LoginManager()
-mail = Mail()
+mail = Mail()   # ← instancia global
 
 def create_app():
     app = Flask(__name__)
     app.config.from_object('config.Config')
 
+    # Inicialización de extensiones
     db.init_app(app)
     login_manager.init_app(app)
     login_manager.login_view = 'auth.login'
     mail.init_app(app)
 
-
+    # Modelos
     from app.models.mascota import Mascota
 
+    # Blueprints
     from app.routes.auth import auth
     app.register_blueprint(auth)
 
@@ -36,7 +38,5 @@ def create_app():
     app.config['MAIL_PASSWORD'] = 'tu_app_password'
     app.config['MAIL_DEFAULT_SENDER'] = 'tu_correo@gmail.com'
 
-    from app import mail
-    mail.init_app(app)
-
     return app
+
