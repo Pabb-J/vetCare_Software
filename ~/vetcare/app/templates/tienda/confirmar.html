@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div style="max-width:700px; margin:0 auto; padding:2rem 1rem;">
+
+    <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1.8rem;">
+        <a href="{{ url_for('tienda.carrito') }}"
+           style="color:var(--teal); text-decoration:none; font-size:.9rem;">← Volver al carrito</a>
+        <h1 style="font-size:1.6rem; font-weight:700; color:var(--teal-dark);">Confirmar pedido</h1>
+    </div>
+
+    <div style="background:var(--white); border-radius:var(--radius); box-shadow:var(--shadow-sm); padding:1.5rem; margin-bottom:1.5rem;">
+
+        <h2 style="font-size:1.1rem; font-weight:700; color:var(--teal-dark); margin-bottom:1.2rem; padding-bottom:.8rem; border-bottom:1px solid var(--border);">
+            📋 Resumen del pedido
+        </h2>
+
+        {% for item in items %}
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:.6rem 0; border-bottom:1px solid var(--border);">
+            <div>
+                <span style="font-weight:600; color:var(--text);">{{ item.producto.nombre }}</span>
+                <span style="color:var(--text-muted); font-size:.88rem; margin-left:.5rem;">x{{ item.cantidad }}</span>
+            </div>
+            <span style="font-weight:700; color:var(--teal-dark);">${{ "%.2f"|format(item.subtotal()) }}</span>
+        </div>
+        {% endfor %}
+
+        <div style="display:flex; justify-content:space-between; padding:1rem 0 0; margin-top:.5rem;">
+            <span style="font-size:1.1rem; font-weight:700;">Total</span>
+            <span style="font-size:1.4rem; font-weight:700; color:var(--teal-dark);">${{ "%.2f"|format(total) }}</span>
+        </div>
+    </div>
+
+    <!-- Aviso pago externo (fuera de alcance según documento) -->
+    <div style="background:#fef3c7; border-left:4px solid #f59e0b; border-radius:var(--radius-sm); padding:1rem 1.2rem; margin-bottom:1.5rem; font-size:.9rem; color:#92400e;">
+        ⚠️ El pago se procesará de forma presencial en la clínica. Al confirmar, tu pedido quedará registrado y un representante te contactará.
+    </div>
+
+    <form method="POST" action="{{ url_for('tienda.finalizar_compra') }}" style="display:flex; gap:1rem; justify-content:flex-end; flex-wrap:wrap;">
+        <a href="{{ url_for('tienda.carrito') }}"
+           style="padding:.7rem 1.4rem; border:1px solid var(--border); border-radius:var(--radius-sm);
+                  color:var(--text-muted); text-decoration:none; font-weight:600;">
+            Cancelar
+        </a>
+        <button type="submit"
+                style="padding:.7rem 1.8rem; background:var(--teal); color:#fff; border:none;
+                       border-radius:var(--radius-sm); font-weight:700; font-size:1rem; cursor:pointer;">
+            ✅ Finalizar compra
+        </button>
+    </form>
+</div>
+
+{% endblock %}

@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div style="max-width: 900px; margin: 40px auto; padding: 0 1rem;">
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h2 style="color: #5ba4a4;">🐾 Mis Mascotas</h2>
+        {% if current_user.rol == 'dueno' %}
+        <a href="{{ url_for('mascotas.agregarMascota') }}"
+           style="padding: 0.6rem 1.2rem; background: #5ba4a4; color: white; border-radius: 8px; text-decoration: none; font-weight: 600;">
+            + Agregar Mascota
+        </a>
+        {% endif %}
+    </div>
+
+    {% if mascotas %}
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.2rem;">
+        {% for mascota in mascotas %}
+            <div style="background: white; border-radius: 14px; padding: 1.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-top: 4px solid #5ba4a4; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform='translateY(0)'">
+                
+                <div style="font-size: 2.5rem; text-align: center; margin-bottom: 0.8rem;">
+                    {% if mascota.especie|lower == 'perro' %}🐶
+                    {% elif mascota.especie|lower == 'gato' %}🐱
+                    {% elif mascota.especie|lower == 'ave' %}🐦
+                    {% else %}🐾{% endif %}
+                </div>
+
+                <h3 style="text-align: center; color: #333; margin-bottom: 1rem; font-size: 1.2rem;">{{ mascota.nombre }}</h3>
+
+                <div style="font-size: 0.9rem; color: #555; display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem;">
+                    <div><span style="color: #999;">Especie</span><br><strong>{{ mascota.especie }}</strong></div>
+                    <div><span style="color: #999;">Raza</span><br><strong>{{ mascota.raza }}</strong></div>
+                    <div><span style="color: #999;">Edad</span><br><strong>{{ mascota.edad }} años</strong></div>
+                    <div><span style="color: #999;">Peso</span><br><strong>{{ mascota.peso }} kg</strong></div>
+                </div>
+
+                <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+                    <a href="{{ url_for('mascotas.editarMascota', id=mascota.id) }}"
+                       style="flex: 1; text-align: center; padding: 0.5rem; background: #e0f0f0; color: #5ba4a4; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 0.85rem;">
+                        ✏️ Editar
+                    </a>
+                    {% if current_user.rol == 'dueno' %}
+                    <a href="{{ url_for('turnos.agendar_turno') }}"
+                       style="flex: 1; text-align: center; padding: 0.5rem; background: #5ba4a4; color: white; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 0.85rem;">
+                        📅 Turno
+                    </a>
+                    {% endif %}
+                    {% if current_user.rol == 'veterinario' %}
+                    <a href="{{ url_for('veterinario.historia_clinica', mascota_id=mascota.id) }}"
+                       style="flex: 1; text-align: center; padding: 0.5rem; background: #4a9b9b; color: white; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 0.85rem;">
+                        📋 Historia clínica
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+        </div>
+    {% else %}
+        <div style="background: white; border-radius: 12px; padding: 3rem; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">🐾</div>
+            <p style="color: #999; font-size: 1.1rem; margin-bottom: 1.5rem;">No tenés mascotas registradas todavía.</p>
+            {% if current_user.rol == 'dueno' %}
+            <a href="{{ url_for('mascotas.agregarMascota') }}"
+               style="display: inline-block; padding: 0.75rem 1.5rem; background: #5ba4a4; color: white; border-radius: 8px; text-decoration: none; font-weight: 600;">
+                + Agregar mi primera mascota
+            </a>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <div style="text-align: center; margin-top: 1.5rem;">
+        <a href="{{ url_for('auth.dashboard') }}" style="color: #5ba4a4; text-decoration: none;">← Volver al dashboard</a>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+    <h2>🐾 Registrar Nueva Mascota</h2>
+
+    <form method="POST">
+        <div class="form-group">
+            <label>DNI del Dueño <span style="color:#a0aec0; font-weight:400;">(opcional)</span></label>
+            <input type="text" name="dueno_dni" placeholder="Dejá vacío si el dueño no está registrado">
+        </div>
+        <div class="form-group">
+            <label>Nombre de la Mascota</label>
+            <input type="text" name="nombre" required>
+        </div>
+        <div class="form-group">
+            <label>Especie</label>
+            <select name="especie" required>
+                <option value="">-- Seleccioná --</option>
+                <option value="Perro">Perro</option>
+                <option value="Gato">Gato</option>
+                <option value="Ave">Ave</option>
+                <option value="Reptil">Reptil</option>
+                <option value="Otro">Otro</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Raza</label>
+            <input type="text" name="raza" required>
+        </div>
+        <div class="form-group">
+            <label>Edad (años)</label>
+            <input type="number" name="edad" min="0" required>
+        </div>
+        <div class="form-group">
+            <label>Peso (kg)</label>
+            <input type="number" name="peso" step="0.1" min="0" required>
+        </div>
+        <button type="submit">✅ Registrar Mascota</button>
+    </form>
+
+    <div class="link-text">
+        <a href="{{ url_for('veterinario.agenda') }}">← Volver a la agenda</a>
+    </div>
+</div>
+{% endblock %}
