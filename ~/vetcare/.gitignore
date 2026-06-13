@@ -1,6 +1,0 @@
-﻿https://github.com/Pabb-J/vetCare_Software# Ignorar la carpeta generada por Visual Studio
-.vs/
-
-# Ignorar archivos compilados de Python
-__pycache__/
-*.pyc
