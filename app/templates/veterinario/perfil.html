@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block content %}
+<div style="max-width: 900px; margin: 40px auto; padding: 0 1rem;">
+
+    <h2 style="color: #5ba4a4; margin-bottom: 1.5rem;">👤 Mi Perfil</h2>
+
+    <!-- Información personal -->
+    <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 1.5rem;">
+        <h3 style="color: #5ba4a4; margin-bottom: 1rem;">Información Personal</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem;">
+            <div><strong>Nombre:</strong> {{ current_user.nombre }} {{ current_user.apellido }}</div>
+            <div><strong>DNI:</strong> {{ current_user.dni }}</div>
+            <div><strong>Correo:</strong> {{ current_user.correo }}</div>
+            <div><strong>Teléfono:</strong> {{ current_user.telefono }}</div>
+            <div><strong>Rol:</strong> <span style="color: #5ba4a4; font-weight: 600;">{{ current_user.rol | capitalize }}</span></div>
+        </div>
+    </div>
+
+    <!-- Resumen de turnos -->
+    <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 1.5rem;">
+        <h3 style="color: #5ba4a4; margin-bottom: 1rem;">📅 Turnos Asignados ({{ turnos | length }})</h3>
+        {% if turnos %}
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                <thead>
+                    <tr style="background: #f0f7f7;">
+                        <th style="padding: 0.6rem; text-align: left; border-bottom: 1px solid #ddd;">Fecha</th>
+                        <th style="padding: 0.6rem; text-align: left; border-bottom: 1px solid #ddd;">Hora</th>
+                        <th style="padding: 0.6rem; text-align: left; border-bottom: 1px solid #ddd;">Mascota</th>
+                        <th style="padding: 0.6rem; text-align: left; border-bottom: 1px solid #ddd;">Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for turno in turnos %}
+                    <tr style="border-bottom: 1px solid #f0f0f0;">
+                        <td style="padding: 0.6rem;">{{ turno.fecha.strftime('%d/%m/%Y') }}</td>
+                        <td style="padding: 0.6rem;">{{ turno.hora.strftime('%H:%M') }}</td>
+                        <td style="padding: 0.6rem;">{{ turno.mascota.nombre if turno.mascota else '-' }}</td>
+                        <td style="padding: 0.6rem;"><span class="estado-{{ turno.estado }}">{{ turno.estado }}</span></td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p style="color: #999;">No tenés turnos asignados.</p>
+        {% endif %}
+    </div>
+
+    <!-- Pacientes atendidos -->
+    <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+        <h3 style="color: #5ba4a4; margin-bottom: 1rem;">🐾 Pacientes Atendidos ({{ mascotas | length }})</h3>
+        {% if mascotas %}
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem;">
+            {% for mascota in mascotas %}
+                <div style="background: #f0f7f7; border-radius: 8px; padding: 0.8rem; text-align: center;">
+                    <div style="font-size: 1.5rem;">🐶</div>
+                    <div style="font-weight: 600; margin-top: 0.3rem;">{{ mascota.nombre }}</div>
+                    <div style="font-size: 0.85rem; color: #666;">{{ mascota.especie }} - {{ mascota.raza }}</div>
+                    <a href="{{ url_for('veterinario.historia_clinica', mascota_id=mascota.id) }}"
+                       style="display: block; margin-top: 0.5rem; font-size: 0.8rem; color: #5ba4a4; text-decoration: none;">
+                        Ver historia clínica →
+                    </a>
+                </div>
+            {% endfor %}
+            </div>
+        {% else %}
+            <p style="color: #999;">No hay pacientes registrados aún.</p>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

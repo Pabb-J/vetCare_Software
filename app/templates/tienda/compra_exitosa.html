@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div style="max-width:600px; margin:3rem auto; padding:2rem 1rem; text-align:center;">
+
+    <div style="background:var(--white); border-radius:var(--radius); box-shadow:var(--shadow); padding:3rem 2rem;">
+        <div style="font-size:4rem; margin-bottom:1rem;">✅</div>
+        <h1 style="font-size:1.8rem; font-weight:700; color:var(--teal-dark); margin-bottom:.6rem;">¡Compra realizada!</h1>
+        <p style="color:var(--text-muted); margin-bottom:2rem;">
+            Tu pedido <strong>#{{ compra.id }}</strong> fue registrado el {{ compra.fecha.strftime('%d/%m/%Y a las %H:%M') }}.
+        </p>
+
+        <!-- Detalle de la compra -->
+        <div style="text-align:left; background:var(--bg); border-radius:var(--radius-sm); padding:1.2rem; margin-bottom:2rem;">
+            {% for item in compra.items %}
+            <div style="display:flex; justify-content:space-between; padding:.4rem 0; border-bottom:1px solid var(--border); font-size:.9rem;">
+                <span>{{ item.producto.nombre }} <span style="color:var(--text-muted);">x{{ item.cantidad }}</span></span>
+                <span style="font-weight:600;">${{ "%.2f"|format(item.subtotal()) }}</span>
+            </div>
+            {% endfor %}
+            <div style="display:flex; justify-content:space-between; padding-top:.8rem; font-weight:700; font-size:1rem;">
+                <span>Total</span>
+                <span style="color:var(--teal-dark);">${{ "%.2f"|format(compra.total) }}</span>
+            </div>
+        </div>
+
+        <p style="font-size:.88rem; color:var(--text-muted); margin-bottom:1.8rem;">
+            El pago se realizará de forma presencial en la clínica. Nos pondremos en contacto con vos pronto.
+        </p>
+
+        <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+            <a href="{{ url_for('tienda.catalogo') }}"
+               style="padding:.7rem 1.5rem; border:1px solid var(--border); border-radius:var(--radius-sm);
+                      color:var(--text-muted); text-decoration:none; font-weight:600;">
+                Seguir comprando
+            </a>
+            <a href="{{ url_for('auth.dashboard') }}"
+               style="padding:.7rem 1.5rem; background:var(--teal); color:#fff; border-radius:var(--radius-sm);
+                      text-decoration:none; font-weight:600;">
+                Ir al dashboard
+            </a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
