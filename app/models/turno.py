@@ -5,8 +5,13 @@ class Turno(db.Model):
     fecha = db.Column(db.Date, nullable=False)
     hora = db.Column(db.Time, nullable=False)
     veterinario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
+<<<<<<< HEAD
     mascota_id = db.Column(db.Integer, db.ForeignKey('mascota.id'), nullable=False)
     dueno_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
+=======
+    mascota_id = db.Column(db.Integer, db.ForeignKey('mascota.id'), nullable=True)
+    dueno_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=True)
+>>>>>>> Brian
     estado = db.Column(db.String(20), default='disponible')  # disponible, ocupado, cancelado
     tipo_consulta = db.Column(db.String(50), nullable=True)
 

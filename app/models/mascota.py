@@ -7,5 +7,9 @@ class Mascota (db.Model):
     raza = db.Column(db.String(50), nullable = False)
     edad = db.Column(db.Integer, nullable = False)
     peso = db.Column(db.Float, nullable = False)
+<<<<<<< HEAD
     dueno_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable = False)
+=======
+    dueno_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable = True)
+>>>>>>> Brian
 

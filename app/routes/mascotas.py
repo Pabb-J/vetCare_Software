@@ -11,6 +11,11 @@ mascotas = Blueprint('mascotas', __name__)
 def listar():
     if current_user.rol == 'dueno':
         mis_mascotas = Mascota.query.filter_by(dueno_id=current_user.id).all()
+<<<<<<< HEAD
+=======
+    elif current_user.rol == 'veterinario':
+        mis_mascotas = Mascota.query.all()
+>>>>>>> Brian
     else:
         mis_mascotas = Mascota.query.all()
     return render_template('mascotas/listar.html', mascotas=mis_mascotas)
