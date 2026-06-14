@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container" style="max-width: 600px;">
+    <h2>💊 Nuevo Tratamiento</h2>
+    <p style="color: #666; margin-bottom: 1rem;">
+        Para el diagnóstico de: <strong>{{ diagnostico.mascota.nombre }}</strong>
+    </p>
+
+    <form method="POST">
+        <div class="form-group">
+            <label>Descripción del Tratamiento</label>
+            <textarea name="descripcion" rows="4" required
+                      style="width:100%; padding: 0.6rem; border: 1px solid #ccc; border-radius: 8px; font-size: 0.95rem; resize: vertical;"></textarea>
+        </div>
+        <div class="form-group">
+            <label>Duración</label>
+            <input type="text" name="duracion" placeholder="Ej: 10 días">
+        </div>
+        <div class="form-group">
+            <label>Indicaciones adicionales</label>
+            <textarea name="indicaciones" rows="3"
+                      style="width:100%; padding: 0.6rem; border: 1px solid #ccc; border-radius: 8px; font-size: 0.95rem; resize: vertical;"></textarea>
+        </div>
+        <button type="submit">✅ Guardar Tratamiento</button>
+    </form>
+
+    <div class="link-text">
+        <a href="{{ url_for('veterinario.historia_clinica', mascota_id=diagnostico.mascota_id) }}">← Volver a historia clínica</a>
+    </div>
+</div>
+{% endblock %}
