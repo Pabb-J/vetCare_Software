@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div style="max-width:600px; margin:0 auto; padding:2rem 1rem;">
+
+    <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1.8rem;">
+        <a href="{{ url_for('tienda.admin_productos') }}"
+           style="color:var(--teal); text-decoration:none; font-size:.9rem; display:flex; align-items:center; gap:.3rem;">
+            <i class="ti ti-arrow-left"></i> Volver a productos
+        </a>
+        <h1 style="font-size:1.4rem; font-weight:700; color:#111;">
+            {% if producto %}Editar producto{% else %}Nuevo producto{% endif %}
+        </h1>
+    </div>
+
+    <div style="background:#fff; border-radius:16px; border:1.5px solid #e8e8e6; padding:1.8rem;">
+        <form method="POST">
+
+            <div style="margin-bottom:1.1rem;">
+                <label style="display:block; font-weight:600; color:#111; margin-bottom:.4rem; font-size:.9rem;">Nombre *</label>
+                <input type="text" name="nombre" required
+                       value="{{ producto.nombre if producto else '' }}"
+                       style="width:100%; padding:.65rem .9rem; border:1.5px solid #e8e8e6; border-radius:10px; font-size:.95rem; outline:none; transition:border-color .15s;"
+                       onfocus="this.style.borderColor='var(--teal)'" onblur="this.style.borderColor='#e8e8e6'">
+            </div>
+
+            <div style="margin-bottom:1.1rem;">
+                <label style="display:block; font-weight:600; color:#111; margin-bottom:.4rem; font-size:.9rem;">Descripción</label>
+                <textarea name="descripcion" rows="3"
+                          style="width:100%; padding:.65rem .9rem; border:1.5px solid #e8e8e6; border-radius:10px; font-size:.95rem; resize:vertical; outline:none; transition:border-color .15s;"
+                          onfocus="this.style.borderColor='var(--teal)'" onblur="this.style.borderColor='#e8e8e6'">{{ producto.descripcion if producto else '' }}</textarea>
+            </div>
+
+            <!-- URL de imagen -->
+            <div style="margin-bottom:1.1rem;">
+                <label style="display:block; font-weight:600; color:#111; margin-bottom:.4rem; font-size:.9rem;">
+                    URL de imagen
+                    <span style="font-weight:400; color:#aaa; font-size:.8rem;">(link directo a la foto del producto)</span>
+                </label>
+                <input type="url" name="imagen_url"
+                       value="{{ producto.imagen_url if producto and producto.imagen_url else '' }}"
+                       placeholder="https://ejemplo.com/imagen.jpg"
+                       style="width:100%; padding:.65rem .9rem; border:1.5px solid #e8e8e6; border-radius:10px; font-size:.95rem; outline:none; transition:border-color .15s;"
+                       onfocus="this.style.borderColor='var(--teal)'" onblur="this.style.borderColor='#e8e8e6'"
+                       oninput="previewImagen(this.value)">
+            </div>
+
+            <!-- Sliders de tamaño -->
+            <div style="margin-bottom:1.1rem; background:#f9f9f7; border-radius:12px; padding:1rem; border:1.5px solid #e8e8e6;">
+                <p style="font-weight:600; color:#111; font-size:.9rem; margin-bottom:.8rem;">Tamaño de la imagen en el catálogo</p>
+
+                <div style="margin-bottom:.8rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:.3rem;">
+                        <label style="font-size:.85rem; color:#555; font-weight:500;">Ancho</label>
+                        <span id="lblAncho" style="font-size:.85rem; font-weight:700; color:var(--teal);">
+                            {{ producto.imagen_ancho if producto and producto.imagen_ancho else 300 }}px
+                        </span>
+                    </div>
+                    <input type="range" name="imagen_ancho" min="150" max="600" step="10"
+                           value="{{ producto.imagen_ancho if producto and producto.imagen_ancho else 300 }}"
+                           style="width:100%; accent-color:var(--teal);"
+                           oninput="actualizarSlider('lblAncho', 'lblAlto', this.value, document.querySelector('[name=imagen_alto]').value)">
+                </div>
+
+                <div style="margin-bottom:.8rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:.3rem;">
+                        <label style="font-size:.85rem; color:#555; font-weight:500;">Alto</label>
+                        <span id="lblAlto" style="font-size:.85rem; font-weight:700; color:var(--teal);">
+                            {{ producto.imagen_alto if producto and producto.imagen_alto else 200 }}px
+                        </span>
+                    </div>
+                    <input type="range" name="imagen_alto" min="100" max="500" step="10"
+                           value="{{ producto.imagen_alto if producto and producto.imagen_alto else 200 }}"
+                           style="width:100%; accent-color:var(--teal);"
+                           oninput="actualizarSlider('lblAncho', 'lblAlto', document.querySelector('[name=imagen_ancho]').value, this.value)">
+                </div>
+
+                <!-- Preview con tamaño aplicado -->
+                <div id="imgPreview" style="margin-top:.8rem; display:{% if producto and producto.imagen_url %}flex{% else %}none{% endif %}; justify-content:center;">
+                    <div style="overflow:hidden; border-radius:10px; border:1.5px solid #e8e8e6; background:#f5f5f3; display:flex; align-items:center; justify-content:center;"
+                         id="previewWrap"
+                         style="width:{{ producto.imagen_ancho if producto and producto.imagen_ancho else 300 }}px; height:{{ producto.imagen_alto if producto and producto.imagen_alto else 200 }}px;">
+                        <img id="imgPreviewEl"
+                             src="{{ producto.imagen_url if producto and producto.imagen_url else '' }}"
+                             style="width:100%; height:100%; object-fit:cover;"
+                             onerror="document.getElementById('imgPreview').style.display='none';">
+                    </div>
+                </div>
+                <p style="font-size:.75rem; color:#aaa; text-align:center; margin-top:.5rem;">Vista previa del tamaño en el catálogo</p>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.1rem;">
+                <div>
+                    <label style="display:block; font-weight:600; color:#111; margin-bottom:.4rem; font-size:.9rem;">Precio ($) *</label>
+                    <input type="number" name="precio" required min="0" step="0.01"
+                           value="{{ producto.precio if producto else '' }}"
+                           style="width:100%; padding:.65rem .9rem; border:1.5px solid #e8e8e6; border-radius:10px; font-size:.95rem; outline:none; transition:border-color .15s;"
+                           onfocus="this.style.borderColor='var(--teal)'" onblur="this.style.borderColor='#e8e8e6'">
+                </div>
+                <div>
+                    <label style="display:block; font-weight:600; color:#111; margin-bottom:.4rem; font-size:.9rem;">Stock *</label>
+                    <input type="number" name="stock" required min="0"
+                           value="{{ producto.stock if producto else '' }}"
+                           style="width:100%; padding:.65rem .9rem; border:1.5px solid #e8e8e6; border-radius:10px; font-size:.95rem; outline:none; transition:border-color .15s;"
+                           onfocus="this.style.borderColor='var(--teal)'" onblur="this.style.borderColor='#e8e8e6'">
+                </div>
+            </div>
+
+            <div style="margin-bottom:1.8rem;">
+                <label style="display:block; font-weight:600; color:#111; margin-bottom:.4rem; font-size:.9rem;">Categoría</label>
+                <select name="categoria"
+                        style="width:100%; padding:.65rem .9rem; border:1.5px solid #e8e8e6; border-radius:10px; font-size:.95rem; background:#fff; outline:none;">
+                    <option value="">Sin categoría</option>
+                    {% for cat in ['Alimento', 'Medicamento', 'Accesorio', 'Higiene', 'Otro'] %}
+                    <option value="{{ cat }}" {% if producto and producto.categoria == cat %}selected{% endif %}>{{ cat }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div style="display:flex; gap:1rem; justify-content:flex-end;">
+                <a href="{{ url_for('tienda.admin_productos') }}"
+                   style="padding:.7rem 1.4rem; border:1.5px solid #e8e8e6; border-radius:10px;
+                          color:#888; text-decoration:none; font-weight:600; font-size:.9rem;">
+                    Cancelar
+                </a>
+                <button type="submit"
+                        style="padding:.7rem 1.8rem; background:#111; color:#fff; border:none;
+                               border-radius:10px; font-weight:700; cursor:pointer; font-size:.95rem; transition:opacity .15s;">
+                    {% if producto %}Guardar cambios{% else %}Agregar producto{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function actualizarSlider(idAncho, idAlto, ancho, alto) {
+    document.getElementById(idAncho).textContent = ancho + 'px';
+    document.getElementById(idAlto).textContent  = alto  + 'px';
+    var wrap = document.getElementById('previewWrap');
+    if (wrap) {
+        wrap.style.width  = ancho + 'px';
+        wrap.style.height = alto  + 'px';
+    }
+}
+
+function previewImagen(url) {
+    var wrap = document.getElementById('imgPreview');
+    var img  = document.getElementById('imgPreviewEl');
+    if (url) {
+        img.src = url;
+        wrap.style.display = 'flex';
+    } else {
+        wrap.style.display = 'none';
+    }
+}
+</script>
+
+{% endblock %}

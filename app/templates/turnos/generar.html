@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div style="max-width: 600px; margin: 0 auto;">
+    <h2 style="font-family: 'Playfair Display', serif; color: #4a9b9b; margin-bottom: 0.5rem;">⚙️ Generar Turnos</h2>
+    <p style="color: #718096; margin-bottom: 2rem; font-size: 0.9rem;">Configurá los turnos disponibles para un veterinario.</p>
+
+    <div style="background: white; border-radius: 14px; padding: 2rem; box-shadow: 0 4px 20px rgba(0,0,0,0.07);">
+        <form method="POST">
+            <div class="form-group">
+                <label>Veterinario</label>
+                <select name="veterinario_id" required>
+                    <option value="">-- Seleccioná un veterinario --</option>
+                    {% for vet in veterinarios %}
+                        <option value="{{ vet.id }}">Dr/a. {{ vet.nombre }} {{ vet.apellido }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label>Fecha inicio</label>
+                    <input type="date" name="fecha_inicio" required>
+                </div>
+                <div class="form-group">
+                    <label>Fecha fin</label>
+                    <input type="date" name="fecha_fin" required>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label>Hora inicio</label>
+                    <input type="time" name="hora_inicio" required>
+                </div>
+                <div class="form-group">
+                    <label>Hora fin</label>
+                    <input type="time" name="hora_fin" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Duración de cada turno</label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; margin-top: 0.5rem;">
+                    <label style="text-transform:none; font-weight:500; display:flex; align-items:center; gap:0.4rem; background:#f5f7fa; padding:0.6rem; border-radius:8px; cursor:pointer;">
+                        <input type="radio" name="duracion" value="30" style="width:auto;" checked> 30 min
+                    </label>
+                    <label style="text-transform:none; font-weight:500; display:flex; align-items:center; gap:0.4rem; background:#f5f7fa; padding:0.6rem; border-radius:8px; cursor:pointer;">
+                        <input type="radio" name="duracion" value="45" style="width:auto;"> 45 min
+                    </label>
+                    <label style="text-transform:none; font-weight:500; display:flex; align-items:center; gap:0.4rem; background:#f5f7fa; padding:0.6rem; border-radius:8px; cursor:pointer;">
+                        <input type="radio" name="duracion" value="60" style="width:auto;"> 1 hora
+                    </label>
+                </div>
+            </div>
+
+            <div id="preview" style="background:#f0fafa; border:1.5px solid #c5e0e0; border-radius:10px; padding:1rem; margin:1rem 0; display:none;">
+                <p style="color:#4a9b9b; font-weight:600; margin:0;" id="preview-text"></p>
+            </div>
+
+            <button type="submit">✅ Generar Turnos</button>
+        </form>
+    </div>
+
+    <div style="text-align:center; margin-top:1rem;">
+        <a href="{{ url_for('turnos.listar_turnos') }}" style="color:#4a9b9b; text-decoration:none; font-size:0.9rem;">← Ver turnos existentes</a>
+    </div>
+</div>
+
+<script>
+['fecha_inicio','fecha_fin','hora_inicio','hora_fin'].forEach(id => 
+    document.querySelector('[name="'+id+'"]').addEventListener('change', calcPreview));
+document.querySelectorAll('[name="duracion"]').forEach(r => r.addEventListener('change', calcPreview));
+
+function calcPreview() {
+    const fi = document.querySelector('[name="fecha_inicio"]').value;
+    const ff = document.querySelector('[name="fecha_fin"]').value;
+    const hi = document.querySelector('[name="hora_inicio"]').value;
+    const hf = document.querySelector('[name="hora_fin"]').value;
+    const dur = document.querySelector('[name="duracion"]:checked')?.value;
+    if (!fi || !ff || !hi || !hf || !dur) return;
+    const dias = Math.round((new Date(ff) - new Date(fi)) / 86400000) + 1;
+    if (dias <= 0) return;
+    const [hiH, hiM] = hi.split(':').map(Number);
+    const [hfH, hfM] = hf.split(':').map(Number);
+    const minutos = (hfH*60+hfM) - (hiH*60+hiM);
+    if (minutos <= 0) return;
+    const porDia = Math.floor(minutos / parseInt(dur));
+    const total = dias * porDia;
+    document.getElementById('preview').style.display = 'block';
+    document.getElementById('preview-text').textContent = 
+        'Se van a generar ' + total + ' turno' + (total!==1?'s':'') + 
+        ' (' + porDia + ' por día × ' + dias + ' día' + (dias!==1?'s':'') + ')';
+}
+</script>
+
+{% endblock %}
