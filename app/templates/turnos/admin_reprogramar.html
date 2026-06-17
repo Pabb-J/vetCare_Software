@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div style="max-width: 520px; margin: 0 auto;">
+    <h2 style="font-family: 'Playfair Display', serif; color: #4a9b9b; margin-bottom: 0.5rem;">Reprogramar Turno</h2>
+    <p style="color: #718096; margin-bottom: 1.5rem; font-size: 0.9rem;">Cambiá la fecha y/o el horario del turno.</p>
+
+    <div style="background: #f0fafa; border: 1.5px solid #c5e0e0; border-radius: 12px; padding: 1rem 1.2rem; margin-bottom: 1.5rem;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; font-size:0.9rem;">
+            <div><span style="color:#718096;">Veterinario:</span></div>
+            <div style="font-weight:600;">Dr/a. {{ turno.veterinario.nombre }} {{ turno.veterinario.apellido }}</div>
+            <div><span style="color:#718096;">Fecha actual:</span></div>
+            <div style="font-weight:600;">{{ turno.fecha.strftime('%d/%m/%Y') }}</div>
+            <div><span style="color:#718096;">Horario actual:</span></div>
+            <div style="font-weight:600;">{{ turno.hora.strftime('%H:%M') }}</div>
+            {% if turno.dueno %}
+            <div><span style="color:#718096;">Dueño:</span></div>
+            <div style="font-weight:600;">{{ turno.dueno.nombre }} {{ turno.dueno.apellido }}</div>
+            {% endif %}
+            {% if turno.mascota %}
+            <div><span style="color:#718096;">Mascota:</span></div>
+            <div style="font-weight:600;">{{ turno.mascota.nombre }}</div>
+            {% endif %}
+            <div><span style="color:#718096;">Estado:</span></div>
+            <div><span class="estado-{{ turno.estado }}">{{ turno.estado | capitalize }}</span></div>
+        </div>
+    </div>
+
+    <div style="background: white; border-radius: 14px; padding: 1.5rem; box-shadow: 0 4px 20px rgba(0,0,0,0.07);">
+        <form method="POST">
+            <div class="form-group">
+                <label>Nueva fecha</label>
+                <input type="date" name="fecha" value="{{ turno.fecha.strftime('%Y-%m-%d') }}" required>
+            </div>
+            <div class="form-group">
+                <label>Nuevo horario</label>
+                <input type="time" name="hora" value="{{ turno.hora.strftime('%H:%M') }}" required>
+            </div>
+            <button type="submit">Guardar Cambios</button>
+        </form>
+    </div>
+
+    <div style="text-align:center; margin-top:1rem;">
+        <a href="{{ url_for('turnos.admin_turnos') }}" style="color:#4a9b9b; text-decoration:none; font-size:0.9rem;">Volver a gestión de turnos</a>
+    </div>
+</div>
+
+{% endblock %}

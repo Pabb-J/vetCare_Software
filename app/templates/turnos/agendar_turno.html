@@ -1,0 +1,397 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<style>
+    .step-bar { display: flex; align-items: center; margin-bottom: 2rem; }
+    .step { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; font-weight: 600; color: #a0aec0; }
+    .step.active { color: #4a9b9b; }
+    .step.done { color: #276749; }
+    .step-num { width: 28px; height: 28px; border-radius: 50%; background: #e2e8f0; color: #718096; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; flex-shrink: 0; }
+    .step.active .step-num { background: #4a9b9b; color: white; }
+    .step.done .step-num { background: #276749; color: white; }
+    .step-line { flex: 1; height: 2px; background: #e2e8f0; margin: 0 0.5rem; }
+    .step-line.done { background: #276749; }
+    .step-panel { display: none; }
+    .step-panel.active { display: block; }
+
+    .option-card { background: white; border: 2px solid #e2e8f0; border-radius: 12px; padding: 1rem 1.2rem; cursor: pointer; transition: all 0.18s; display: flex; align-items: center; gap: 1rem; margin-bottom: 0.75rem; }
+    .option-card:hover { border-color: #4a9b9b; box-shadow: 0 4px 12px rgba(74,155,155,0.15); }
+    .option-card.selected { border-color: #4a9b9b; background: #e8f4f4; }
+    .option-card .icon-box { width: 42px; height: 42px; background: #e8f4f4; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
+    .option-card .opt-title { font-weight: 600; font-size: 0.95rem; color: #2d3748; }
+    .option-card .opt-sub { font-size: 0.8rem; color: #718096; }
+
+    .nav-btns { display: flex; gap: 1rem; margin-top: 1.5rem; }
+    .btn-back { flex: 1; padding: 0.75rem; border: 2px solid #e2e8f0; background: white; color: #718096; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.9rem; transition: all 0.18s; }
+    .btn-back:hover { border-color: #4a9b9b; color: #4a9b9b; }
+    .btn-next { flex: 2; padding: 0.75rem; background: #4a9b9b; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.9rem; transition: background 0.18s; }
+    .btn-next:hover { background: #357878; }
+    .btn-next:disabled { background: #a0aec0; cursor: not-allowed; }
+    .resumen-box { background: #f0fafa; border: 1.5px solid #c5e0e0; border-radius: 12px; padding: 1.2rem 1.5rem; margin-bottom: 1.5rem; }
+    .resumen-row { display: flex; justify-content: space-between; padding: 0.4rem 0; font-size: 0.9rem; border-bottom: 1px solid #e2e8f0; }
+    .resumen-row:last-child { border-bottom: none; }
+    .resumen-row span:first-child { color: #718096; }
+    .resumen-row span:last-child { font-weight: 600; color: #2d3748; }
+
+    /* ─── CALENDAR ─── */
+    .cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+    .cal-nav button { background: none; border: 1.5px solid #e2e8f0; border-radius: 8px; width: 36px; height: 36px; cursor: pointer; font-size: 1.1rem; color: #4a9b9b; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+    .cal-nav button:hover { background: #e8f4f4; border-color: #4a9b9b; }
+    .cal-nav .cal-title { font-weight: 700; font-size: 1.05rem; color: #2d3748; }
+    .cal-dow { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; margin-bottom: 2px; }
+    .cal-dow span { text-align: center; font-size: 0.7rem; font-weight: 700; color: #a0aec0; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.3rem 0; }
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+    .cal-cell { aspect-ratio: 1; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 600; color: #2d3748; cursor: default; transition: all 0.12s; position: relative; border: 2px solid transparent; background: #f7fafc; min-height: 44px; }
+    .cal-cell .day-num { font-size: 0.85rem; font-weight: 600; line-height: 1; }
+    .cal-cell .day-dot { width: 5px; height: 5px; border-radius: 50%; margin-top: 3px; }
+    .cal-cell.other-month { opacity: 0.25; }
+    .cal-cell.past { opacity: 0.35; background: #f0f0f0; }
+    .cal-cell.available { background: #f0fff4; border-color: #9ae6b4; cursor: pointer; }
+    .cal-cell.available:hover { background: #c6f6d5; border-color: #48bb78; transform: scale(1.05); box-shadow: 0 4px 12px rgba(72,187,120,0.25); }
+    .cal-cell.full { background: #fff5f5; border-color: #fed7d7; }
+    .cal-cell.today { border-color: #4a9b9b; font-weight: 800; }
+    .cal-cell.selected { background: #4a9b9b !important; border-color: #2d6b6b !important; color: white; transform: scale(1.05); box-shadow: 0 4px 16px rgba(74,155,155,0.4); }
+    .cal-cell.selected .day-dot { background: white; }
+    .cal-legend { display: flex; gap: 1.5rem; justify-content: center; margin-top: 1rem; font-size: 0.78rem; color: #718096; }
+    .cal-legend span { display: flex; align-items: center; gap: 0.4rem; }
+    .cal-legend .lg-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+
+    /* ─── SLOTS ─── */
+    .slots-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 0.6rem; margin-top: 0.75rem; }
+    .slot-btn { background: white; border: 2px solid #e2e8f0; border-radius: 10px; padding: 0.7rem 0.5rem; cursor: pointer; text-align: center; transition: all 0.15s; font-weight: 600; font-size: 0.9rem; color: #4a9b9b; }
+    .slot-btn:hover { border-color: #4a9b9b; background: #f0fafa; }
+    .slot-btn.selected { border-color: #4a9b9b; background: #e8f4f4; box-shadow: 0 0 0 2px rgba(74,155,155,0.3); }
+    .slot-btn .slot-time { font-size: 1rem; }
+    .slot-btn .slot-label { font-size: 0.65rem; color: #718096; font-weight: 500; }
+</style>
+
+<div style="max-width: 640px; margin: 0 auto;">
+    <h2 style="font-family: 'Playfair Display', serif; color: #4a9b9b; margin-bottom: 0.5rem;">Sacar Turno</h2>
+    <p style="color: #718096; margin-bottom: 1.5rem; font-size: 0.9rem;">Seguí los pasos para reservar tu turno.</p>
+
+    <!-- Barra de pasos -->
+    <div class="step-bar">
+        <div class="step active" id="label-1"><div class="step-num">1</div> Veterinario</div>
+        <div class="step-line" id="line-1"></div>
+        <div class="step" id="label-2"><div class="step-num">2</div> Fecha</div>
+        <div class="step-line" id="line-2"></div>
+        <div class="step" id="label-3"><div class="step-num">3</div> Confirmar</div>
+    </div>
+
+    {% if not turnos_disponibles %}
+    <div style="background:white; padding:2.5rem; border-radius:12px; text-align:center; box-shadow:0 4px 12px rgba(0,0,0,0.06);">
+        <div style="font-size:3rem; margin-bottom:1rem;">📅</div>
+        <p style="color:#718096;">No hay turnos disponibles en este momento.</p>
+    </div>
+    {% else %}
+
+    <form method="POST" id="turno-form">
+        <input type="hidden" name="turno_id" id="input-turno-id">
+
+        <!-- PASO 1: Veterinario -->
+        <div class="step-panel active" id="step-1">
+            <div style="background:white; border-radius:12px; padding:1.5rem; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+                <p style="font-weight:600; color:#2d3748; margin-bottom:1rem;">Seleccioná un veterinario</p>
+                {% set vets_vistos = [] %}
+                {% for turno in turnos_disponibles %}
+                    {% if turno.veterinario_id not in vets_vistos %}
+                        {% set _ = vets_vistos.append(turno.veterinario_id) %}
+                        <div class="option-card" onclick="selectVet({{ turno.veterinario_id }}, 'Dr/a. {{ turno.veterinario.nombre }} {{ turno.veterinario.apellido }}', event)">
+                            <div class="icon-box">🩺</div>
+                            <div>
+                                <div class="opt-title">Dr/a. {{ turno.veterinario.nombre }} {{ turno.veterinario.apellido }}</div>
+                                <div class="opt-sub">Veterinario/a</div>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            <div class="nav-btns">
+                <button type="button" class="btn-next" id="btn-1" disabled onclick="goStep(2)">Siguiente</button>
+            </div>
+        </div>
+
+        <!-- PASO 2: Calendario + Turnos -->
+        <div class="step-panel" id="step-2">
+            <div style="background:white; border-radius:12px; padding:1.5rem; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+                <p style="font-weight:600; color:#2d3748; margin-bottom:1rem;">Elegí una fecha disponible</p>
+                <!-- Calendar -->
+                <div id="calendar-component"></div>
+                <!-- Legend -->
+                <div class="cal-legend">
+                    <span><span class="lg-dot" style="background:#48bb78;"></span> Disponible</span>
+                    <span><span class="lg-dot" style="background:#fc8181;"></span> Sin disponibilidad</span>
+                    <span><span class="lg-dot" style="background:#e2e8f0;"></span> Sin turnos</span>
+                </div>
+                <!-- Slots -->
+                <div id="slots-container" style="display:none; margin-top:1.5rem; padding-top:1.5rem; border-top:1px solid #e2e8f0;">
+                    <p style="font-weight:600; color:#2d3748; margin-bottom:0.5rem;">
+                        Horarios para <span id="selected-date-label" style="color:#4a9b9b;"></span>
+                    </p>
+                    <div id="slots-list" class="slots-grid"></div>
+                </div>
+            </div>
+            <div class="nav-btns">
+                <button type="button" class="btn-back" onclick="goStep(1)">Volver</button>
+                <button type="button" class="btn-next" id="btn-2" disabled onclick="goStep(3)">Siguiente</button>
+            </div>
+        </div>
+
+        <!-- PASO 3: Confirmar -->
+        <div class="step-panel" id="step-3">
+            <div style="background:white; border-radius:12px; padding:1.5rem; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+                <p style="font-weight:600; color:#2d3748; margin-bottom:1rem;">Confirmá tu turno</p>
+                <div class="resumen-box">
+                    <div class="resumen-row"><span>Veterinario</span><span id="res-vet">-</span></div>
+                    <div class="resumen-row"><span>Fecha</span><span id="res-fecha">-</span></div>
+                    <div class="resumen-row"><span>Horario</span><span id="res-hora">-</span></div>
+                </div>
+            </div>
+            <div class="nav-btns">
+                <button type="button" class="btn-back" onclick="goStep(2)">Volver</button>
+                <button type="submit" class="btn-next">Confirmar Turno</button>
+            </div>
+        </div>
+
+    </form>
+    {% endif %}
+</div>
+
+<script>
+const calendarData = {{ calendar_data | tojson }};
+
+let selectedVetId = null, selectedVetNombre = null;
+let selectedTurnoId = null, selectedFecha = null, selectedHora = null;
+let selectedDateStr = null;
+
+// ─── Calendar state ───
+let calYear, calMonth;
+
+function initCalendar() {
+    const now = new Date();
+    calYear = now.getFullYear();
+    calMonth = now.getMonth();
+}
+
+function formatDateKey(y, m, d) {
+    return y + '-' + String(m + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+}
+
+function goStep(n) {
+    document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('step-' + n).classList.add('active');
+    for (let i = 1; i <= 3; i++) {
+        const lbl = document.getElementById('label-' + i);
+        lbl.classList.remove('active', 'done');
+        if (i < n) lbl.classList.add('done');
+        else if (i === n) lbl.classList.add('active');
+        if (i < 3) document.getElementById('line-' + i).classList.toggle('done', i < n);
+    }
+    if (n === 2) renderCalendar();
+    if (n === 3) updateResumen();
+}
+
+function selectVet(id, nombre, event) {
+    selectedVetId = id;
+    selectedVetNombre = nombre;
+    selectedTurnoId = null; selectedFecha = null; selectedHora = null; selectedDateStr = null;
+    document.querySelectorAll('#step-1 .option-card').forEach(c => c.classList.remove('selected'));
+    event.currentTarget.classList.add('selected');
+    document.getElementById('btn-1').disabled = false;
+}
+
+// ─── Calendar rendering ───
+function renderCalendar() {
+    const container = document.getElementById('calendar-component');
+    const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    const dow = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+
+    const firstDay = new Date(calYear, calMonth, 1).getDay();
+    const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Get available dates for selected vet from the turno-slot-data elements
+    const allSlots = document.querySelectorAll('.turno-slot-data');
+    const availDates = new Set();
+    const fullDates = new Set();
+    allSlots.forEach(s => {
+        if (parseInt(s.dataset.vet) !== selectedVetId) return;
+        const f = s.dataset.fecha;
+        const key = f + '_' + selectedVetId;
+        if (calendarData[key] === 'available') availDates.add(f);
+        else if (calendarData[key] === 'full') fullDates.add(f);
+    });
+    // Also check calendarData directly for dates without slots visible
+    // (they'd be full/occupied dates with no disponible turnos)
+
+    let html = '';
+
+    // Nav
+    html += '<div class="cal-nav">';
+    html += '<button type="button" onclick="prevMonth()">&larr;</button>';
+    html += '<span class="cal-title">' + months[calMonth] + ' ' + calYear + '</span>';
+    html += '<button type="button" onclick="nextMonth()">&rarr;</button>';
+    html += '</div>';
+
+    // Day of week headers
+    html += '<div class="cal-dow">';
+    dow.forEach(d => { html += '<span>' + d + '</span>'; });
+    html += '</div>';
+
+    // Grid
+    html += '<div class="cal-grid">';
+
+    // Empty cells before first day
+    for (let i = 0; i < firstDay; i++) {
+        html += '<div class="cal-cell other-month"></div>';
+    }
+
+    // Day cells
+    for (let d = 1; d <= daysInMonth; d++) {
+        const dateStr = formatDateKey(calYear, calMonth, d);
+        const cellDate = new Date(calYear, calMonth, d);
+        const isPast = cellDate < today;
+        const isToday = cellDate.getTime() === today.getTime();
+        const isAvailable = availDates.has(dateStr);
+        const isFull = fullDates.has(dateStr);
+
+        let classes = 'cal-cell';
+        if (isPast) classes += ' past';
+        if (isToday) classes += ' today';
+        if (isAvailable && !isPast) classes += ' available';
+        else if (isFull && !isPast) classes += ' full';
+        else if (!isPast && !isAvailable) classes += '';
+
+        if (selectedDateStr === dateStr) classes += ' selected';
+
+        html += '<div class="' + classes + '" data-date="' + dateStr + '"';
+        if (isAvailable && !isPast) {
+            html += ' onclick="selectDate(\'' + dateStr + '\')"';
+        }
+        html += '>';
+        html += '<span class="day-num">' + d + '</span>';
+        if (isAvailable && !isPast) {
+            html += '<span class="day-dot" style="background:#48bb78;"></span>';
+        } else if (isFull && !isPast) {
+            html += '<span class="day-dot" style="background:#fc8181;"></span>';
+        }
+        html += '</div>';
+    }
+
+    html += '</div>';
+    container.innerHTML = html;
+
+    // If we already had a selected date, show its slots
+    if (selectedDateStr) {
+        renderSlotsForDate(selectedDateStr);
+    }
+}
+
+function prevMonth() {
+    calMonth--;
+    if (calMonth < 0) { calMonth = 11; calYear--; }
+    selectedDateStr = null;
+    selectedTurnoId = null;
+    selectedFecha = null;
+    selectedHora = null;
+    document.getElementById('btn-2').disabled = true;
+    document.getElementById('input-turno-id').value = '';
+    document.getElementById('slots-container').style.display = 'none';
+    renderCalendar();
+}
+
+function nextMonth() {
+    calMonth++;
+    if (calMonth > 11) { calMonth = 0; calYear++; }
+    selectedDateStr = null;
+    selectedTurnoId = null;
+    selectedFecha = null;
+    selectedHora = null;
+    document.getElementById('btn-2').disabled = true;
+    document.getElementById('input-turno-id').value = '';
+    document.getElementById('slots-container').style.display = 'none';
+    renderCalendar();
+}
+
+function selectDate(dateStr) {
+    selectedDateStr = dateStr;
+    selectedTurnoId = null;
+    selectedHora = null;
+    document.getElementById('btn-2').disabled = true;
+    document.getElementById('input-turno-id').value = '';
+
+    // Update calendar visual
+    document.querySelectorAll('.cal-cell').forEach(c => c.classList.remove('selected'));
+    document.querySelector('.cal-cell[data-date="' + dateStr + '"]')?.classList.add('selected');
+
+    // Show slots for this date
+    renderSlotsForDate(dateStr);
+}
+
+function renderSlotsForDate(dateStr) {
+    const container = document.getElementById('slots-list');
+    const label = document.getElementById('selected-date-label');
+    const allSlots = document.querySelectorAll('.turno-slot-data');
+    const matched = [];
+
+    allSlots.forEach(s => {
+        if (parseInt(s.dataset.vet) !== selectedVetId) return;
+        if (s.dataset.fecha !== dateStr) return;
+        matched.push(s);
+    });
+
+    if (matched.length === 0) {
+        document.getElementById('slots-container').style.display = 'none';
+        document.getElementById('btn-2').disabled = true;
+        return;
+    }
+
+    // Format the date label
+    const parts = dateStr.split('-');
+    const d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+    const dayName = d.toLocaleDateString('es-AR', { weekday: 'long' });
+    label.textContent = dayName.charAt(0).toUpperCase() + dayName.slice(1) + ' ' + parts[2] + '/' + parts[1] + '/' + parts[0];
+
+    container.innerHTML = '';
+    matched.sort((a, b) => a.dataset.hora.localeCompare(b.dataset.hora));
+    matched.forEach(s => {
+        const btn = document.createElement('div');
+        btn.className = 'slot-btn';
+        btn.innerHTML = '<div class="slot-time">' + s.dataset.hora + '</div>';
+        btn.onclick = function() {
+            document.querySelectorAll('.slot-btn').forEach(x => x.classList.remove('selected'));
+            btn.classList.add('selected');
+            selectedTurnoId = s.dataset.id;
+            selectedHora = s.dataset.hora;
+            selectedFecha = s.dataset.fechaLabel;
+            document.getElementById('input-turno-id').value = selectedTurnoId;
+            document.getElementById('btn-2').disabled = false;
+        };
+        container.appendChild(btn);
+    });
+
+    document.getElementById('slots-container').style.display = 'block';
+}
+
+function updateResumen() {
+    document.getElementById('res-vet').textContent = selectedVetNombre || '-';
+    document.getElementById('res-fecha').textContent = selectedFecha || '-';
+    document.getElementById('res-hora').textContent = selectedHora || '-';
+}
+
+// ─── Init ───
+initCalendar();
+</script>
+
+{% for turno in turnos_disponibles %}
+    <div class="turno-slot-data" style="display:none"
+         data-id="{{ turno.id }}"
+         data-vet="{{ turno.veterinario_id }}"
+         data-fecha-label="{{ turno.fecha.strftime('%d/%m/%Y') }}"
+         data-fecha="{{ turno.fecha.strftime('%Y-%m-%d') }}"
+         data-hora="{{ turno.hora.strftime('%H:%M') }}">
+    </div>
+{% endfor %}
+
+{% endblock %}

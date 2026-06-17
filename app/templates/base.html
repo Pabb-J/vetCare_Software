@@ -720,6 +720,9 @@
             <a href="{{ url_for('auth.perfil_dueno') }}" class="nav-link">
                 <span class="icon"><i class="ti ti-user-circle"></i></span> Mi Perfil
             </a>
+            <a href="{{ url_for('mascotas.listar') }}" class="nav-link">
+                <span class="icon"><i class="ti ti-paw"></i></span> Mis Mascotas
+            </a>
             <a href="{{ url_for('turnos.agendar_turno') }}" class="nav-link">
                 <span class="icon"><i class="ti ti-calendar-plus"></i></span> Sacar Turno
             </a>
@@ -735,12 +738,22 @@
             </a>
 
         {% elif current_user.rol == 'admin' %}
-            <div class="nav-section-label">Administración</div>
+            <div class="nav-section-label">Turnos</div>
+            <a href="{{ url_for('turnos.admin_turnos') }}" class="nav-link">
+                <span class="icon"><i class="ti ti-calendar-stats"></i></span> Gestión de Turnos
+            </a>
+            <a href="{{ url_for('turnos.admin_crear_turno') }}" class="nav-link">
+                <span class="icon"><i class="ti ti-calendar-plus"></i></span> Crear Turno
+            </a>
             <a href="{{ url_for('turnos.generarTurnos') }}" class="nav-link">
                 <span class="icon"><i class="ti ti-settings"></i></span> Generar Turnos
             </a>
-            <a href="{{ url_for('turnos.listar_turnos') }}" class="nav-link">
-                <span class="icon"><i class="ti ti-calendar-stats"></i></span> Ver Turnos
+            <div class="nav-section-label">Usuarios</div>
+            <a href="{{ url_for('turnos.admin_duenos') }}" class="nav-link">
+                <span class="icon"><i class="ti ti-users"></i></span> Dueños
+            </a>
+            <a href="{{ url_for('turnos.admin_veterinarios') }}" class="nav-link">
+                <span class="icon"><i class="ti ti-stethoscope"></i></span> Veterinarios
             </a>
             <a href="{{ url_for('mascotas.listar') }}" class="nav-link">
                 <span class="icon"><i class="ti ti-paw"></i></span> Mascotas

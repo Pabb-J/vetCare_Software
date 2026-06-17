@@ -19,18 +19,20 @@
     <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 1.5rem;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
             <h3 style="color: #5ba4a4;">🐾 Mis Mascotas ({{ mascotas|length }})</h3>
-            <a href="{{ url_for('mascotas.agregarMascota') }}" style="font-size: 0.85rem; padding: 0.4rem 0.8rem; background: #5ba4a4; color: white; border-radius: 6px; text-decoration: none; font-weight: 600;">+ Agregar</a>
         </div>
         {% if mascotas %}
             <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.8rem;">
             {% for m in mascotas %}
-                <div style="background: #f0f7f7; border-radius: 8px; padding: 0.8rem; text-align: center;">
+                <a href="{{ url_for('mascotas.detalle', id=m.id) }}"
+                   style="background: #f0f7f7; border-radius: 8px; padding: 0.8rem; text-align: center; text-decoration: none; color: inherit; display: block; transition: background 0.15s;"
+                   onmouseover="this.style.background='#dceeee'" onmouseout="this.style.background='#f0f7f7'">
                     <div style="font-size: 1.8rem;">
                         {% if m.especie|lower == 'perro' %}🐶{% elif m.especie|lower == 'gato' %}🐱{% else %}🐾{% endif %}
                     </div>
-                    <div style="font-weight: 600; margin-top: 0.3rem;">{{ m.nombre }}</div>
+                    <div style="font-weight: 600; margin-top: 0.3rem; color: #333;">{{ m.nombre }}</div>
                     <div style="font-size: 0.8rem; color: #666;">{{ m.especie }}</div>
-                </div>
+                    <div style="font-size: 0.75rem; color: #4a9b9b; margin-top: 0.3rem; font-weight: 600;">Ver detalle →</div>
+                </a>
             {% endfor %}
             </div>
         {% else %}

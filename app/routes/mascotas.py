@@ -3,6 +3,7 @@ from flask_login import login_required, current_user
 from app import db
 from app.models.mascota import Mascota
 from app.models.usuario import Usuario
+from app.models.historia_clinica import Diagnostico
 
 mascotas = Blueprint('mascotas', __name__)
 
@@ -20,6 +21,10 @@ def listar():
 @mascotas.route('/agregar', methods=['GET', 'POST'])
 @login_required
 def agregarMascota():
+    if current_user.rol not in ('veterinario', 'admin'):
+        flash('Tu mascota la registra el veterinario con tu DNI, no podés agregarla vos mismo.', 'error')
+        return redirect(url_for('mascotas.listar'))
+
     if request.method == 'POST':
         nombre = request.form['nombre']
         especie = request.form['especie']
@@ -39,10 +44,32 @@ def agregarMascota():
         flash('Mascota agregada exitosamente!')
         return redirect(url_for('mascotas.listar'))
     return render_template('mascotas/agregar.html')
-    
+
+
+@mascotas.route('/mascotas/detalle/<int:id>')
+@login_required
+def detalle(id):
+    mascota = Mascota.query.get_or_404(id)
+
+    # El dueño solo puede ver el detalle de SUS propias mascotas.
+    # Veterinario y admin pueden ver el detalle de cualquier mascota.
+    if current_user.rol == 'dueno' and mascota.dueno_id != current_user.id:
+        flash('No tenés acceso a esa mascota.', 'error')
+        return redirect(url_for('mascotas.listar'))
+
+    diagnosticos = Diagnostico.query.filter_by(mascota_id=mascota.id)\
+        .order_by(Diagnostico.fecha.desc()).all()
+
+    return render_template('mascotas/detalle.html', mascota=mascota, diagnosticos=diagnosticos)
+
+
 @mascotas.route('/editar/<int:id>', methods=['GET', 'POST'])
 @login_required
 def editarMascota(id):
+    if current_user.rol not in ('veterinario', 'admin'):
+        flash('Solo el veterinario o el administrador pueden editar los datos de una mascota.', 'error')
+        return redirect(url_for('mascotas.listar'))
+
     mascotaBuscada = Mascota.query.get_or_404(id)
     if request.method == 'POST':
         mascotaBuscada.nombre = request.form['nombre']

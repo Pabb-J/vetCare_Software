@@ -1,0 +1,285 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<style>
+    .gen-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: start; }
+    @media (max-width: 800px) { .gen-grid { grid-template-columns: 1fr; } }
+    .cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; }
+    .cal-nav button { background: none; border: 1.5px solid #e2e8f0; border-radius: 8px; width: 34px; height: 34px; cursor: pointer; font-size: 1rem; color: #4a9b9b; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+    .cal-nav button:hover { background: #e8f4f4; border-color: #4a9b9b; }
+    .cal-nav .cal-title { font-weight: 700; font-size: 1rem; color: #2d3748; }
+    .cal-dow { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; margin-bottom: 2px; }
+    .cal-dow span { text-align: center; font-size: 0.65rem; font-weight: 700; color: #a0aec0; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.25rem 0; }
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+    .cal-cell { aspect-ratio: 1; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 600; color: #2d3748; cursor: default; transition: all 0.12s; border: 2px solid transparent; background: #f7fafc; min-height: 38px; }
+    .cal-cell .day-num { font-size: 0.8rem; font-weight: 600; line-height: 1; }
+    .cal-cell .day-dot { width: 4px; height: 4px; border-radius: 50%; margin-top: 2px; }
+    .cal-cell.other-month { opacity: 0.2; }
+    .cal-cell.past { opacity: 0.3; }
+    .cal-cell.has-disponible { background: #f0fff4; border-color: #9ae6b4; }
+    .cal-cell.has-ocupado { background: #fff5f5; border-color: #fed7d7; }
+    .cal-cell.mixto { background: #fffff0; border-color: #f6e05e; }
+    .cal-cell.today { border-color: #4a9b9b; font-weight: 800; }
+    .cal-cell.selected { background: #4a9b9b !important; border-color: #2d6b6b !important; color: white; }
+    .cal-cell.selected .day-dot { background: white; }
+    .cal-cell.range { background: #e8f4f4; border-color: #4a9b9b; }
+    .cal-legend { display: flex; gap: 1rem; justify-content: center; margin-top: 0.75rem; font-size: 0.72rem; color: #718096; flex-wrap: wrap; }
+    .cal-legend span { display: flex; align-items: center; gap: 0.3rem; }
+    .cal-legend .lg-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+    .date-range-display { background: #f0fafa; border: 1.5px solid #c5e0e0; border-radius: 10px; padding: 0.6rem 1rem; margin: 0.75rem 0; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; }
+    .date-range-display .range-label { color: #718096; font-weight: 500; }
+    .date-range-display .range-value { color: #2d3748; font-weight: 700; }
+</style>
+
+<div style="max-width: 860px; margin: 0 auto;">
+    <h2 style="font-family: 'Playfair Display', serif; color: #4a9b9b; margin-bottom: 0.5rem;">Generar Turnos</h2>
+    <p style="color: #718096; margin-bottom: 2rem; font-size: 0.9rem;">Configurá los turnos disponibles para un veterinario. Hacé clic en las fechas del calendario para seleccionar el rango.</p>
+
+    <div class="gen-grid">
+        <!-- LEFT: Form -->
+        <div style="background: white; border-radius: 14px; padding: 1.5rem; box-shadow: 0 4px 20px rgba(0,0,0,0.07);">
+            <form method="POST" id="gen-form">
+                <div class="form-group">
+                    <label>Veterinario</label>
+                    <select name="veterinario_id" id="vet-select" required>
+                        <option value="">-- Seleccioná un veterinario --</option>
+                        {% for vet in veterinarios %}
+                            <option value="{{ vet.id }}">Dr/a. {{ vet.nombre }} {{ vet.apellido }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                    <div class="form-group">
+                        <label>Fecha inicio</label>
+                        <input type="date" name="fecha_inicio" id="fecha_inicio" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Fecha fin</label>
+                        <input type="date" name="fecha_fin" id="fecha_fin" required>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                    <div class="form-group">
+                        <label>Hora inicio</label>
+                        <input type="time" name="hora_inicio" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Hora fin</label>
+                        <input type="time" name="hora_fin" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Duración de cada turno</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; margin-top: 0.4rem;">
+                        <label style="text-transform:none; font-weight:500; display:flex; align-items:center; gap:0.3rem; background:#f5f7fa; padding:0.5rem; border-radius:8px; cursor:pointer; font-size:0.85rem;">
+                            <input type="radio" name="duracion" value="30" style="width:auto;" checked> 30 min
+                        </label>
+                        <label style="text-transform:none; font-weight:500; display:flex; align-items:center; gap:0.3rem; background:#f5f7fa; padding:0.5rem; border-radius:8px; cursor:pointer; font-size:0.85rem;">
+                            <input type="radio" name="duracion" value="45" style="width:auto;"> 45 min
+                        </label>
+                        <label style="text-transform:none; font-weight:500; display:flex; align-items:center; gap:0.3rem; background:#f5f7fa; padding:0.5rem; border-radius:8px; cursor:pointer; font-size:0.85rem;">
+                            <input type="radio" name="duracion" value="60" style="width:auto;"> 1 hora
+                        </label>
+                    </div>
+                </div>
+
+                <div id="preview" style="background:#f0fafa; border:1.5px solid #c5e0e0; border-radius:10px; padding:0.8rem; margin:0.75rem 0; display:none;">
+                    <p style="color:#4a9b9b; font-weight:600; margin:0; font-size:0.85rem;" id="preview-text"></p>
+                </div>
+
+                <button type="submit">Generar Turnos</button>
+            </form>
+        </div>
+
+        <!-- RIGHT: Calendar -->
+        <div style="background: white; border-radius: 14px; padding: 1.2rem; box-shadow: 0 4px 20px rgba(0,0,0,0.07);">
+            <p style="font-weight:600; color:#2d3748; margin-bottom:0.75rem; font-size:0.9rem;">Calendario de turnos existentes</p>
+            <div id="calendar-component"></div>
+            <div class="cal-legend">
+                <span><span class="lg-dot" style="background:#48bb78;"></span> Disponible</span>
+                <span><span class="lg-dot" style="background:#fc8181;"></span> Ocupado</span>
+                <span><span class="lg-dot" style="background:#e2e8f0;"></span> Sin turnos</span>
+            </div>
+            <div class="date-range-display" id="range-display">
+                <span class="range-label">Rango seleccionado</span>
+                <span class="range-value" id="range-value">—</span>
+            </div>
+        </div>
+    </div>
+
+    <div style="text-align:center; margin-top:1rem;">
+        <a href="{{ url_for('turnos.listar_turnos') }}" style="color:#4a9b9b; text-decoration:none; font-size:0.9rem;">Ver turnos existentes</a>
+    </div>
+</div>
+
+<script>
+const turnosData = {{ turnos_data | tojson }};
+
+let calYear, calMonth;
+let selStart = null, selEnd = null;
+
+function initCal() {
+    const now = new Date();
+    calYear = now.getFullYear();
+    calMonth = now.getMonth();
+    renderCalendar();
+}
+
+function formatDate(y, m, d) {
+    return y + '-' + String(m + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+}
+
+function renderCalendar() {
+    const container = document.getElementById('calendar-component');
+    const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    const dow = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+    const vetId = document.getElementById('vet-select').value;
+    const firstDay = new Date(calYear, calMonth, 1).getDay();
+    const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    let html = '';
+    html += '<div class="cal-nav">';
+    html += '<button type="button" onclick="prevMonth()">&larr;</button>';
+    html += '<span class="cal-title">' + months[calMonth] + ' ' + calYear + '</span>';
+    html += '<button type="button" onclick="nextMonth()">&rarr;</button>';
+    html += '</div>';
+    html += '<div class="cal-dow">';
+    dow.forEach(d => { html += '<span>' + d + '</span>'; });
+    html += '</div>';
+    html += '<div class="cal-grid">';
+
+    for (let i = 0; i < firstDay; i++) {
+        html += '<div class="cal-cell other-month"></div>';
+    }
+
+    for (let d = 1; d <= daysInMonth; d++) {
+        const dateStr = formatDate(calYear, calMonth, d);
+        const cellDate = new Date(calYear, calMonth, d);
+        const isPast = cellDate < today;
+        const isToday = cellDate.getTime() === today.getTime();
+
+        let classes = 'cal-cell';
+        if (isPast) classes += ' past';
+        if (isToday) classes += ' today';
+
+        // Determine status from turnosData
+        let hasDisp = false, hasOcup = false;
+        if (vetId) {
+            const kDisp = dateStr + '_' + vetId;
+            for (const key in turnosData) {
+                const parts = key.split('_');
+                if (parts[0] === dateStr && parts[1] === vetId) {
+                    if (turnosData[key]['disponible'] > 0) hasDisp = true;
+                    if (turnosData[key]['ocupado'] > 0) hasOcup = true;
+                }
+            }
+        }
+
+        if (hasDisp && hasOcup) classes += ' mixto';
+        else if (hasDisp) classes += ' has-disponible';
+        else if (hasOcup) classes += ' has-ocupado';
+
+        // Selected range highlight
+        const dObj = new Date(calYear, calMonth, d);
+        if (selStart && selEnd) {
+            const s = new Date(selStart), e = new Date(selEnd);
+            if (dObj >= s && dObj <= e) classes += ' range';
+        }
+        if (selStart && dateStr === selStart) classes += ' selected';
+        if (selEnd && dateStr === selEnd) classes += ' selected';
+
+        const clickAttr = 'onclick="clickDate(\'' + dateStr + '\')"';
+        html += '<div class="' + classes + '" data-date="' + dateStr + '" ' + clickAttr + '>';
+        html += '<span class="day-num">' + d + '</span>';
+        if (hasDisp) html += '<span class="day-dot" style="background:#48bb78;"></span>';
+        else if (hasOcup) html += '<span class="day-dot" style="background:#fc8181;"></span>';
+        html += '</div>';
+    }
+
+    html += '</div>';
+    container.innerHTML = html;
+    updateRangeDisplay();
+}
+
+function prevMonth() {
+    calMonth--;
+    if (calMonth < 0) { calMonth = 11; calYear--; }
+    renderCalendar();
+}
+
+function nextMonth() {
+    calMonth++;
+    if (calMonth > 11) { calMonth = 0; calYear++; }
+    renderCalendar();
+}
+
+function clickDate(dateStr) {
+    if (!selStart || (selStart && selEnd)) {
+        selStart = dateStr;
+        selEnd = null;
+    } else {
+        // Set end to the later of the two dates
+        if (dateStr >= selStart) selEnd = dateStr;
+        else { selEnd = selStart; selStart = dateStr; }
+    }
+    // Update form inputs
+    document.getElementById('fecha_inicio').value = selStart;
+    document.getElementById('fecha_fin').value = selEnd || selStart;
+    renderCalendar();
+    calcPreview();
+}
+
+function updateRangeDisplay() {
+    const el = document.getElementById('range-value');
+    if (selStart && selEnd) {
+        if (selStart === selEnd) el.textContent = selStart;
+        else el.textContent = selStart + ' — ' + selEnd;
+    } else if (selStart) {
+        el.textContent = selStart + ' (click otra fecha para rango)';
+    } else {
+        el.textContent = '—';
+    }
+}
+
+function calcPreview() {
+    const fi = document.querySelector('[name="fecha_inicio"]').value;
+    const ff = document.querySelector('[name="fecha_fin"]').value;
+    const hi = document.querySelector('[name="hora_inicio"]').value;
+    const hf = document.querySelector('[name="hora_fin"]').value;
+    const dur = document.querySelector('[name="duracion"]:checked')?.value;
+    if (!fi || !ff || !hi || !hf || !dur) return;
+    const dias = Math.round((new Date(ff) - new Date(fi)) / 86400000) + 1;
+    if (dias <= 0) return;
+    const [hiH, hiM] = hi.split(':').map(Number);
+    const [hfH, hfM] = hf.split(':').map(Number);
+    const minutos = (hfH*60+hfM) - (hiH*60+hiM);
+    if (minutos <= 0) return;
+    const porDia = Math.floor(minutos / parseInt(dur));
+    const total = dias * porDia;
+    document.getElementById('preview').style.display = 'block';
+    document.getElementById('preview-text').textContent =
+        'Se van a generar ' + total + ' turno' + (total!==1?'s':'') +
+        ' (' + porDia + ' por d\u00eda \u00d7 ' + dias + ' d\u00eda' + (dias!==1?'s':'') + ')';
+}
+
+// ─── Event bindings ───
+document.getElementById('vet-select').addEventListener('change', function() {
+    selStart = null; selEnd = null;
+    document.getElementById('fecha_inicio').value = '';
+    document.getElementById('fecha_fin').value = '';
+    document.getElementById('preview').style.display = 'none';
+    renderCalendar();
+});
+
+['fecha_inicio','fecha_fin','hora_inicio','hora_fin'].forEach(id =>
+    document.querySelector('[name="'+id+'"]').addEventListener('change', calcPreview));
+document.querySelectorAll('[name="duracion"]').forEach(r => r.addEventListener('change', calcPreview));
+
+initCal();
+</script>
+{% endblock %}

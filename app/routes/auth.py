@@ -40,6 +40,10 @@ def login():
         password = request.form['password']
         usuario = Usuario.query.filter_by(correo=correo).first()
 
+        if usuario and not usuario.activo:
+            flash('Esta cuenta fue dada de baja. Contactá al administrador.')
+            return render_template('login.html')
+
         if usuario and usuario.check_password(password):
             login_user(usuario)
             return redirect(url_for('auth.dashboard'))
@@ -66,6 +70,8 @@ def perfil_dueno():
     turnos = Turno.query.filter_by(dueno_id=current_user.id).order_by(Turno.fecha, Turno.hora).all()
     mascotas = Mascota.query.filter_by(dueno_id=current_user.id).all()
     return render_template('perfil_dueno.html', turnos=turnos, mascotas=mascotas)
+
+
 
 @auth.route('/olvide-contrasena', methods=['GET', 'POST'])
 def olvide_contrasena():

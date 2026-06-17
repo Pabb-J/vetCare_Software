@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<style>
+.user-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 0.75rem; }
+.user-card { background: white; border-radius: 12px; padding: 1rem 1.2rem; display: flex; justify-content: space-between; align-items: center; border: 1.5px solid #e2e8f0; transition: all 0.15s; }
+.user-card:hover { border-color: #4a9b9b; box-shadow: 0 2px 12px rgba(74,155,155,0.1); }
+.user-card .uc-info { display: flex; align-items: center; gap: 0.8rem; }
+.user-card .uc-avatar { width: 40px; height: 40px; border-radius: 10px; background: #e0f0f0; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+.user-card .uc-name { font-weight: 700; color: #2d3748; font-size: 0.9rem; }
+.user-card .uc-detail { font-size: 0.78rem; color: #718096; }
+.user-card .uc-actions { display: flex; gap: 0.4rem; align-items: center; }
+.user-card .uc-actions form { margin: 0; }
+.user-card .uc-actions button { width: auto; padding: 0.35rem 0.75rem; font-size: 0.78rem; margin: 0; border-radius: 6px; font-weight: 600; cursor: pointer; }
+.btn-del { background: #fff5f5; color: #c53030; border: 1.5px solid #fed7d7; }
+.btn-del:hover { background: #fed7d7; }
+.badge-inactivo { background: #edf2f7; color: #718096; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.7rem; font-weight: 600; }
+.badge-activo { background: #f0fff4; color: #276749; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.7rem; font-weight: 600; }
+</style>
+
+<div style="max-width: 900px; margin: 0 auto;">
+
+    <div class="page-header">
+        <div>
+            <div class="page-title">Veterinarios Registrados</div>
+            <div class="page-subtitle">{{ veterinarios|length }} veterinario{{ 's' if veterinarios|length != 1 else '' }}</div>
+        </div>
+        <a href="{{ url_for('turnos.admin_duenos') }}" style="color:#4a9b9b; text-decoration:none; font-weight:600; font-size:0.88rem;">Ver Dueños</a>
+    </div>
+
+    {% if veterinarios %}
+    <div class="user-grid">
+        {% for v in veterinarios %}
+        <div class="user-card">
+            <div class="uc-info">
+                <div class="uc-avatar">🩺</div>
+                <div>
+                    <div class="uc-name">Dr/a. {{ v.nombre }} {{ v.apellido }}</div>
+                    <div class="uc-detail">{{ v.correo }} · {{ v.telefono }}</div>
+                    <div class="uc-detail">DNI: {{ v.dni }}</div>
+                    <div style="margin-top:0.3rem;">
+                        {% if v.activo %}
+                        <span class="badge-activo">Activo</span>
+                        {% else %}
+                        <span class="badge-inactivo">Inactivo</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="uc-actions">
+                {% if v.activo %}
+                <form method="POST" action="{{ url_for('turnos.admin_eliminar_veterinario', id=v.id) }}"
+                      onsubmit="return confirm('¿Eliminar a Dr/a. {{ v.nombre }} {{ v.apellido }}? Se liberarán sus turnos disponibles.')">
+                    <button type="submit" class="btn-del">Eliminar</button>
+                </form>
+                {% else %}
+                <form method="POST" action="{{ url_for('turnos.admin_reactivar_veterinario', id=v.id) }}"
+                      onsubmit="return confirm('¿Reactivar a Dr/a. {{ v.nombre }} {{ v.apellido }}?')">
+                    <button type="submit" class="btn-del" style="background:#5ba4a4;">Reactivar</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state"><p>No hay veterinarios registrados.</p></div>
+    {% endif %}
+
+</div>
+
+{% endblock %}

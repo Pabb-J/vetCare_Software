@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<style>
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.75rem; margin-bottom: 1.5rem; }
+.stat-card { background: white; border-radius: 12px; padding: 1rem; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border: 1.5px solid #e2e8f0; }
+.stat-card .stat-num { font-size: 1.6rem; font-weight: 800; font-family: 'Playfair Display', serif; }
+.stat-card .stat-label { font-size: 0.72rem; color: #718096; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.2rem; }
+.stat-card.stat-total { border-color: #4a9b9b; }
+.stat-card.stat-total .stat-num { color: #4a9b9b; }
+.stat-card.stat-disp { border-color: #9ae6b4; }
+.stat-card.stat-disp .stat-num { color: #276749; }
+.stat-card.stat-ocup { border-color: #90cdf4; }
+.stat-card.stat-ocup .stat-num { color: #2b6cb0; }
+.stat-card.stat-cancel { border-color: #fed7d7; }
+.stat-card.stat-cancel .stat-num { color: #c53030; }
+.stat-card.stat-reprog { border-color: #f6e05e; }
+.stat-card.stat-reprog .stat-num { color: #b7791f; }
+.filtros { background: white; border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: flex-end; }
+.filtros .form-group { margin-bottom: 0; min-width: 140px; flex: 1; }
+.filtros label { font-size: 0.7rem; margin-bottom: 0.2rem; }
+.filtros input, .filtros select { font-size: 0.85rem; padding: 0.45rem 0.7rem; }
+.filtros .btn-filtrar { width: auto; padding: 0.45rem 1.2rem; margin-top: 0; }
+.turno-row { background: white; border-radius: 10px; padding: 0.85rem 1.2rem; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; border: 1.5px solid #e2e8f0; transition: all 0.15s; }
+.turno-row:hover { border-color: #4a9b9b; box-shadow: 0 2px 12px rgba(74,155,155,0.1); }
+.turno-row .tr-info { display: flex; align-items: center; gap: 1.2rem; flex-wrap: wrap; }
+.turno-row .tr-fecha-hora { min-width: 120px; }
+.turno-row .tr-fecha { font-weight: 600; color: #2d3748; font-size: 0.9rem; }
+.turno-row .tr-hora { color: #4a9b9b; font-weight: 700; font-size: 1rem; }
+.turno-row .tr-detalle { font-size: 0.82rem; color: #718096; }
+.turno-row .tr-detalle strong { color: #2d3748; }
+.turno-row .tr-actions { display: flex; gap: 0.4rem; align-items: center; }
+.turno-row .tr-actions form { margin: 0; }
+.turno-row .tr-actions button, .tr-actions a { width: auto; padding: 0.35rem 0.75rem; font-size: 0.78rem; margin: 0; border-radius: 6px; text-decoration: none; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.3rem; }
+.btn-cancel { background: #fff5f5; color: #c53030; border: 1.5px solid #fed7d7; }
+.btn-cancel:hover { background: #fed7d7; }
+.btn-reprog { background: #fffff0; color: #b7791f; border: 1.5px solid #f6e05e; }
+.btn-reprog:hover { background: #fefcbf; }
+.btn-ver { background: #e8f4f4; color: #4a9b9b; border: 1.5px solid #b8d8d8; }
+.btn-ver:hover { background: #b8d8d8; }
+.empty-row { text-align: center; padding: 3rem; color: #718096; background: white; border-radius: 12px; }
+</style>
+
+<div style="max-width: 1000px; margin: 0 auto;">
+
+    <div class="page-header">
+        <div>
+            <div class="page-title">Gestión de Turnos</div>
+            <div class="page-subtitle">{{ total }} turno{{ 's' if total != 1 else '' }} encontrado{{ 's' if total != 1 else '' }}</div>
+        </div>
+        <a href="{{ url_for('turnos.generarTurnos') }}"
+           style="padding:0.65rem 1.3rem; background:var(--teal); color:white; border-radius:var(--radius-sm); text-decoration:none; font-weight:700; font-size:0.88rem;">
+            + Generar Turnos
+        </a>
+    </div>
+
+    <!-- Stats -->
+    <div class="stat-grid">
+        <div class="stat-card stat-total"><div class="stat-num">{{ total }}</div><div class="stat-label">Total</div></div>
+        <div class="stat-card stat-disp"><div class="stat-num" style="color:#276749;">{{ disponibles }}</div><div class="stat-label">Disponibles</div></div>
+        <div class="stat-card stat-ocup"><div class="stat-num" style="color:#2b6cb0;">{{ ocupados }}</div><div class="stat-label">Ocupados</div></div>
+        <div class="stat-card stat-cancel"><div class="stat-num" style="color:#c53030;">{{ cancelados }}</div><div class="stat-label">Cancelados</div></div>
+        <div class="stat-card stat-reprog"><div class="stat-num" style="color:#b7791f;">{{ reprogramar }}</div><div class="stat-label">Reprogramar</div></div>
+    </div>
+
+    <!-- Filters -->
+    <form class="filtros" method="GET" action="{{ url_for('turnos.admin_turnos') }}">
+        <div class="form-group">
+            <label>Estado</label>
+            <select name="estado">
+                <option value="todos" {% if filtro_estado == 'todos' %}selected{% endif %}>Todos</option>
+                <option value="disponible" {% if filtro_estado == 'disponible' %}selected{% endif %}>Disponible</option>
+                <option value="ocupado" {% if filtro_estado == 'ocupado' %}selected{% endif %}>Ocupado</option>
+                <option value="cancelado" {% if filtro_estado == 'cancelado' %}selected{% endif %}>Cancelado</option>
+                <option value="reprogramar" {% if filtro_estado == 'reprogramar' %}selected{% endif %}>Reprogramar</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Veterinario</label>
+            <select name="veterinario">
+                <option value="todos" {% if filtro_vet == 'todos' %}selected{% endif %}>Todos</option>
+                {% for v in veterinarios %}
+                <option value="{{ v.id }}" {% if filtro_vet == v.id|string %}selected{% endif %}>Dr/a. {{ v.nombre }} {{ v.apellido }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Desde</label>
+            <input type="date" name="fecha_desde" value="{{ filtro_fecha_desde }}">
+        </div>
+        <div class="form-group">
+            <label>Hasta</label>
+            <input type="date" name="fecha_hasta" value="{{ filtro_fecha_hasta }}">
+        </div>
+        <button type="submit" class="btn-filtrar">Filtrar</button>
+        <a href="{{ url_for('turnos.admin_turnos') }}" style="width:auto; padding:0.45rem 1rem; font-size:0.85rem; color:#718096; text-decoration:none; font-weight:600;">Limpiar</a>
+    </form>
+
+    <!-- Turnos -->
+    {% if turnos %}
+        {% for t in turnos %}
+        <div class="turno-row">
+            <div class="tr-info">
+                <div class="tr-fecha-hora">
+                    <div class="tr-fecha">{{ t.fecha.strftime('%d/%m/%Y') }}</div>
+                    <div class="tr-hora">{{ t.hora.strftime('%H:%M') }}</div>
+                </div>
+                <div class="tr-detalle">
+                    <div><strong>Vet:</strong> Dr/a. {{ t.veterinario.nombre }} {{ t.veterinario.apellido }}</div>
+                    {% if t.dueno %}
+                    <div><strong>Dueño:</strong> {{ t.dueno.nombre }} {{ t.dueno.apellido }}</div>
+                    {% endif %}
+                    {% if t.mascota %}
+                    <div><strong>Mascota:</strong> {{ t.mascota.nombre }}</div>
+                    {% endif %}
+                </div>
+                <div>
+                    <span class="estado-{{ t.estado }}">{{ t.estado | capitalize }}</span>
+                </div>
+            </div>
+            <div class="tr-actions">
+                {% if t.estado == 'ocupado' %}
+                <a href="{{ url_for('turnos.admin_reprogramar', id=t.id) }}" class="btn-reprog">Reprogramar</a>
+                <form method="POST" action="{{ url_for('turnos.cancelar_turno', id=t.id) }}"
+                      onsubmit="return confirm('¿Cancelar este turno?')">
+                    <button type="submit" class="btn-cancel">Cancelar</button>
+                </form>
+                {% elif t.estado == 'disponible' %}
+                <form method="POST" action="{{ url_for('turnos.cancelar_turno', id=t.id) }}"
+                      onsubmit="return confirm('¿Eliminar este turno disponible?')">
+                    <button type="submit" class="btn-cancel">Eliminar</button>
+                </form>
+                {% elif t.estado == 'reprogramar' %}
+                <a href="{{ url_for('turnos.admin_reprogramar', id=t.id) }}" class="btn-reprog">Reprogramar</a>
+                <form method="POST" action="{{ url_for('turnos.cancelar_turno', id=t.id) }}"
+                      onsubmit="return confirm('¿Cancelar este turno?')">
+                    <button type="submit" class="btn-cancel">Cancelar</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-row">
+            <div style="font-size:2.5rem; margin-bottom:0.5rem;">📭</div>
+            <p>No se encontraron turnos con los filtros seleccionados.</p>
+        </div>
+    {% endif %}
+
+</div>
+
+{% endblock %}

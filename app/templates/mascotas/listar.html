@@ -5,12 +5,6 @@
 
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
         <h2 style="color: #5ba4a4;">🐾 Mis Mascotas</h2>
-        {% if current_user.rol == 'dueno' %}
-        <a href="{{ url_for('mascotas.agregarMascota') }}"
-           style="padding: 0.6rem 1.2rem; background: #5ba4a4; color: white; border-radius: 8px; text-decoration: none; font-weight: 600;">
-            + Agregar Mascota
-        </a>
-        {% endif %}
     </div>
 
     {% if mascotas %}
@@ -35,20 +29,34 @@
                 </div>
 
                 <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
-                    <a href="{{ url_for('mascotas.editarMascota', id=mascota.id) }}"
-                       style="flex: 1; text-align: center; padding: 0.5rem; background: #e0f0f0; color: #5ba4a4; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 0.85rem;">
-                        ✏️ Editar
-                    </a>
                     {% if current_user.rol == 'dueno' %}
+                    <a href="{{ url_for('mascotas.detalle', id=mascota.id) }}"
+                       style="flex: 1; text-align: center; padding: 0.5rem; background: #4a9b9b; color: white; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 0.85rem;">
+                        📋 Ver detalle
+                    </a>
                     <a href="{{ url_for('turnos.agendar_turno') }}"
                        style="flex: 1; text-align: center; padding: 0.5rem; background: #5ba4a4; color: white; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 0.85rem;">
                         📅 Turno
                     </a>
                     {% endif %}
                     {% if current_user.rol == 'veterinario' %}
+                    <a href="{{ url_for('mascotas.editarMascota', id=mascota.id) }}"
+                       style="flex: 1; text-align: center; padding: 0.5rem; background: #e0f0f0; color: #5ba4a4; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 0.85rem;">
+                        ✏️ Editar
+                    </a>
                     <a href="{{ url_for('veterinario.historia_clinica', mascota_id=mascota.id) }}"
                        style="flex: 1; text-align: center; padding: 0.5rem; background: #4a9b9b; color: white; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 0.85rem;">
                         📋 Historia clínica
+                    </a>
+                    {% endif %}
+                    {% if current_user.rol == 'admin' %}
+                    <a href="{{ url_for('mascotas.editarMascota', id=mascota.id) }}"
+                       style="flex: 1; text-align: center; padding: 0.5rem; background: #e0f0f0; color: #5ba4a4; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 0.85rem;">
+                        ✏️ Editar
+                    </a>
+                    <a href="{{ url_for('mascotas.detalle', id=mascota.id) }}"
+                       style="flex: 1; text-align: center; padding: 0.5rem; background: #4a9b9b; color: white; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 0.85rem;">
+                        📋 Ver detalle
                     </a>
                     {% endif %}
                 </div>
@@ -58,12 +66,9 @@
     {% else %}
         <div style="background: white; border-radius: 12px; padding: 3rem; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
             <div style="font-size: 3rem; margin-bottom: 1rem;">🐾</div>
-            <p style="color: #999; font-size: 1.1rem; margin-bottom: 1.5rem;">No tenés mascotas registradas todavía.</p>
+            <p style="color: #999; font-size: 1.1rem;">Todavía no tenés mascotas registradas.</p>
             {% if current_user.rol == 'dueno' %}
-            <a href="{{ url_for('mascotas.agregarMascota') }}"
-               style="display: inline-block; padding: 0.75rem 1.5rem; background: #5ba4a4; color: white; border-radius: 8px; text-decoration: none; font-weight: 600;">
-                + Agregar mi primera mascota
-            </a>
+            <p style="color: #999; font-size: 0.9rem; margin-top: 0.5rem;">Tu mascota aparecerá acá una vez que el veterinario la registre con tu DNI.</p>
             {% endif %}
         </div>
     {% endif %}

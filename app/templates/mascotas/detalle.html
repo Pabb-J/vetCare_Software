@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% block content %}
+<div style="max-width: 900px; margin: 40px auto; padding: 0 1rem;">
+
+    <div style="margin-bottom: 1.5rem;">
+        <h2 style="color: #5ba4a4;">
+            {% if mascota.especie|lower == 'perro' %}🐶
+            {% elif mascota.especie|lower == 'gato' %}🐱
+            {% elif mascota.especie|lower == 'ave' %}🐦
+            {% else %}🐾{% endif %}
+            {{ mascota.nombre }}
+        </h2>
+        <p style="color: #999; font-size: 0.9rem; margin-top: 0.2rem;">Detalle de la mascota</p>
+    </div>
+
+    <!-- Info básica -->
+    <div style="background: #f0f7f7; border-radius: 10px; padding: 1rem 1.5rem; margin-bottom: 1.5rem; display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem;">
+        <div><span style="color:#999; font-size:0.85rem;">Especie</span><br><strong>{{ mascota.especie }}</strong></div>
+        <div><span style="color:#999; font-size:0.85rem;">Raza</span><br><strong>{{ mascota.raza }}</strong></div>
+        <div><span style="color:#999; font-size:0.85rem;">Edad</span><br><strong>{{ mascota.edad }} años</strong></div>
+        <div><span style="color:#999; font-size:0.85rem;">Peso</span><br><strong>{{ mascota.peso }} kg</strong></div>
+    </div>
+
+    <h3 style="color: #5ba4a4; margin-bottom: 1rem;">📋 Historia Clínica</h3>
+
+    {% if diagnosticos %}
+        {% for diag in diagnosticos %}
+        <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 1.5rem; border-left: 4px solid #5ba4a4;">
+
+            <div style="font-size: 0.85rem; color: #999;">{{ diag.fecha.strftime('%d/%m/%Y %H:%M') }}</div>
+            <h4 style="color: #333; margin: 0.3rem 0;">🩺 Diagnóstico</h4>
+            <p>{{ diag.descripcion }}</p>
+            {% if diag.observaciones %}
+            <p style="color: #666; font-size: 0.9rem; margin-top: 0.3rem;"><em>{{ diag.observaciones }}</em></p>
+            {% endif %}
+            <div style="font-size: 0.8rem; color: #999; margin-top: 0.5rem;">
+                Atendido por {{ diag.veterinario.nombre }} {{ diag.veterinario.apellido }}
+            </div>
+
+            <!-- Tratamientos -->
+            {% if diag.tratamientos %}
+            <div style="margin-top: 1rem; padding: 0.8rem; background: #f9f9f9; border-radius: 8px;">
+                <strong style="color: #5ba4a4;">💊 Tratamientos</strong>
+                {% for t in diag.tratamientos %}
+                <div style="margin-top: 0.5rem; padding: 0.5rem; background: white; border-radius: 6px;">
+                    <div>{{ t.descripcion }}</div>
+                    {% if t.duracion %}<div style="font-size: 0.85rem; color: #666;">⏱ {{ t.duracion }}</div>{% endif %}
+                    {% if t.indicaciones %}<div style="font-size: 0.85rem; color: #666;">📌 {{ t.indicaciones }}</div>{% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Medicamentos -->
+            {% if diag.medicamentos %}
+            <div style="margin-top: 0.8rem; padding: 0.8rem; background: #fff8f0; border-radius: 8px;">
+                <strong style="color: #e65100;">💉 Medicamentos Recetados</strong>
+                <table style="width: 100%; margin-top: 0.5rem; font-size: 0.9rem; border-collapse: collapse;">
+                    <thead>
+                        <tr style="color: #999; text-align: left;">
+                            <th style="padding: 0.3rem;">Nombre</th>
+                            <th style="padding: 0.3rem;">Dosis</th>
+                            <th style="padding: 0.3rem;">Frecuencia</th>
+                            <th style="padding: 0.3rem;">Duración</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for m in diag.medicamentos %}
+                        <tr style="border-top: 1px solid #f0e0d0;">
+                            <td style="padding: 0.3rem;">{{ m.nombre }}</td>
+                            <td style="padding: 0.3rem;">{{ m.dosis }}</td>
+                            <td style="padding: 0.3rem;">{{ m.frecuencia }}</td>
+                            <td style="padding: 0.3rem;">{{ m.duracion or '-' }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+
+        </div>
+        {% endfor %}
+    {% else %}
+        <div style="text-align: center; padding: 3rem; color: #999; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+            <p>Todavía no hay diagnósticos registrados para esta mascota.</p>
+        </div>
+    {% endif %}
+
+    <div style="text-align: center; margin-top: 1.5rem;">
+        <a href="{{ url_for('mascotas.listar') }}" style="color: #5ba4a4; text-decoration: none;">← Volver a mis mascotas</a>
+    </div>
+</div>
+{% endblock %}

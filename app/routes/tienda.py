@@ -219,8 +219,28 @@ def admin_productos():
     if current_user.rol != 'admin':
         flash('Acceso denegado.', 'danger')
         return redirect(url_for('auth.dashboard'))
-    productos = Producto.query.all()
-    return render_template('tienda/admin_productos.html', productos=productos)
+
+    busqueda = request.args.get('busqueda', '').strip()
+    categoria = request.args.get('categoria', '')
+
+    query = Producto.query
+    if busqueda:
+        query = query.filter(Producto.nombre.ilike(f'%{busqueda}%'))
+    if categoria:
+        query = query.filter(Producto.categoria == categoria)
+
+    productos = query.all()
+
+    categorias = db.session.query(Producto.categoria).filter(
+        Producto.categoria != None
+    ).distinct().all()
+    categorias = [c[0] for c in categorias if c[0]]
+
+    return render_template('tienda/admin_productos.html',
+                           productos=productos,
+                           categorias=categorias,
+                           busqueda=busqueda,
+                           categoria_activa=categoria)
 
 
 @tienda.route('/admin/productos/nuevo', methods=['GET', 'POST'])

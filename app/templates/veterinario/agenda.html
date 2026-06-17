@@ -1,0 +1,294 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    .cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+    .cal-nav button { background: none; border: 1.5px solid #e2e8f0; border-radius: 8px; width: 36px; height: 36px; cursor: pointer; font-size: 1.1rem; color: #5ba4a4; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+    .cal-nav button:hover { background: #e0f0f0; border-color: #5ba4a4; }
+    .cal-nav .cal-title { font-weight: 700; font-size: 1.1rem; color: #2d3748; }
+    .cal-dow { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; margin-bottom: 2px; }
+    .cal-dow span { text-align: center; font-size: 0.7rem; font-weight: 700; color: #a0aec0; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.3rem 0; }
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+    .cal-cell { border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 600; color: #2d3748; cursor: pointer; transition: all 0.12s; position: relative; border: 2px solid transparent; background: #f7fafc; min-height: 56px; padding: 0.25rem; }
+    .cal-cell .day-num { font-size: 0.9rem; font-weight: 700; line-height: 1; }
+    .cal-cell .day-count { font-size: 0.6rem; font-weight: 600; margin-top: 2px; padding: 0.1rem 0.4rem; border-radius: 10px; color: #718096; }
+    .cal-cell.other-month { opacity: 0.2; }
+    .cal-cell.past { opacity: 0.35; }
+    .cal-cell.available { background: #f0fff4; border-color: #9ae6b4; }
+    .cal-cell.available:hover { background: #c6f6d5; border-color: #48bb78; transform: scale(1.05); box-shadow: 0 4px 12px rgba(72,187,120,0.25); }
+    .cal-cell.full { background: #fff5f5; border-color: #fed7d7; }
+    .cal-cell.mixed { background: #fffff0; border-color: #f6e05e; }
+    .cal-cell.today { border-color: #5ba4a4; font-weight: 800; }
+    .cal-cell.active-day { background: #5ba4a4 !important; border-color: #3d7a7a !important; color: white; transform: scale(1.05); box-shadow: 0 4px 16px rgba(91,164,164,0.4); }
+    .cal-cell.active-day .day-count { color: white; }
+    .cal-legend { display: flex; gap: 1.5rem; justify-content: center; margin: 0.75rem 0 1.5rem; font-size: 0.78rem; color: #718096; }
+    .cal-legend span { display: flex; align-items: center; gap: 0.4rem; }
+    .cal-legend .lg-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+</style>
+
+<div style="max-width: 900px; margin: 40px auto; padding: 0 1rem;">
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+        <h2 style="color: #5ba4a4; margin:0;">Mi Agenda</h2>
+        <div style="display:flex; gap:0.5rem;">
+            <a href="{{ url_for('veterinario.agenda', vista='dia') }}"
+               style="padding:0.4rem 1rem; border-radius:8px; text-decoration:none; font-weight:600; font-size:0.85rem;
+                      background:{% if vista == 'dia' %}#5ba4a4{% else %}#e0f0f0{% endif %};
+                      color:{% if vista == 'dia' %}white{% else %}#5ba4a4{% endif %};">
+                Hoy
+            </a>
+            <a href="{{ url_for('veterinario.agenda', vista='semana') }}"
+               style="padding:0.4rem 1rem; border-radius:8px; text-decoration:none; font-weight:600; font-size:0.85rem;
+                      background:{% if vista == 'semana' %}#5ba4a4{% else %}#e0f0f0{% endif %};
+                      color:{% if vista == 'semana' %}white{% else %}#5ba4a4{% endif %};">
+                Semana
+            </a>
+            <a href="{{ url_for('veterinario.agenda', vista='mes') }}"
+               style="padding:0.4rem 1rem; border-radius:8px; text-decoration:none; font-weight:600; font-size:0.85rem;
+                      background:{% if vista == 'mes' %}#5ba4a4{% else %}#e0f0f0{% endif %};
+                      color:{% if vista == 'mes' %}white{% else %}#5ba4a4{% endif %};">
+                Mes
+            </a>
+        </div>
+    </div>
+
+    {% if vista == 'mes' %}
+    <!-- ═══ MES: Calendar grid ═══ -->
+    <div style="background:white; border-radius:14px; padding:1.5rem; box-shadow:0 4px 20px rgba(0,0,0,0.07); margin-bottom:1.5rem;">
+        <div id="calendar-component"></div>
+        <div class="cal-legend">
+            <span><span class="lg-dot" style="background:#48bb78;"></span> Disponible</span>
+            <span><span class="lg-dot" style="background:#f6ad55;"></span> Mixto</span>
+            <span><span class="lg-dot" style="background:#fc8181;"></span> Ocupado</span>
+        </div>
+    </div>
+
+    <!-- Turnos del día seleccionado -->
+    <div id="day-turnos" style="background:white; border-radius:14px; padding:1.5rem; box-shadow:0 4px 20px rgba(0,0,0,0.07);">
+        <p style="font-weight:600; color:#5ba4a4; margin-bottom:1rem;" id="day-turnos-title">Turnos</p>
+        <div id="day-turnos-list"></div>
+    </div>
+
+    <script>
+    const serverTurnos = [
+        {% for t in turnos %}
+        { fecha: '{{ t.fecha.strftime("%Y-%m-%d") }}', hora: '{{ t.hora.strftime("%H:%M") }}',
+          mascota: '{{ t.mascota.nombre if t.mascota else "" }}',
+          dueno: '{{ t.dueno.nombre if t.dueno else "" }} {{ t.dueno.apellido if t.dueno else "" }}',
+          especie: '{{ t.mascota.especie if t.mascota else "" }}',
+          estado: '{{ t.estado }}', tipo: '{{ t.tipo_consulta or "" }}',
+          mascota_id: {{ t.mascota_id or 'null' }}, id: {{ t.id }} },
+        {% endfor %}
+    ];
+    const HISTORIA_URL = "{{ url_for('veterinario.historia_clinica', mascota_id=0) }}";
+    const REPROGRAMAR_URL = "{{ url_for('veterinario.reprogramar_turno', id=0) }}";
+
+    let calYear, calMonth;
+    let activeDate = null;
+
+    function initCalendar() {
+        const now = new Date();
+        calYear = now.getFullYear();
+        calMonth = now.getMonth();
+        renderCal();
+    }
+
+    function fmtDate(y, m, d) {
+        return y + '-' + String(m + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+    }
+
+    function turnosForDate(dateStr) {
+        return serverTurnos.filter(function(t) { return t.fecha === dateStr; });
+    }
+
+    function dateStatus(dateStr) {
+        const dayTurnos = turnosForDate(dateStr);
+        if (dayTurnos.length === 0) return null;
+        var hasOcup = false, hasDisp = false;
+        dayTurnos.forEach(function(t) {
+            if (t.estado === 'ocupado' || t.estado === 'reprogramar') hasOcup = true;
+            else if (t.estado === 'disponible') hasDisp = true;
+        });
+        if (hasDisp && hasOcup) return 'mixed';
+        if (hasDisp) return 'available';
+        if (hasOcup) return 'full';
+        return null;
+    }
+
+    function renderCal() {
+        var container = document.getElementById('calendar-component');
+        var months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+        var dow = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+        var firstDay = new Date(calYear, calMonth, 1).getDay();
+        var daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+        var today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        var html = '';
+        html += '<div class="cal-nav">';
+        html += '<button type="button" onclick="prevMonth()">&larr;</button>';
+        html += '<span class="cal-title">' + months[calMonth] + ' ' + calYear + '</span>';
+        html += '<button type="button" onclick="nextMonth()">&rarr;</button>';
+        html += '</div>';
+        html += '<div class="cal-dow">';
+        dow.forEach(function(d) { html += '<span>' + d + '</span>'; });
+        html += '</div>';
+        html += '<div class="cal-grid">';
+
+        for (var i = 0; i < firstDay; i++) {
+            html += '<div class="cal-cell other-month"></div>';
+        }
+
+        for (var d = 1; d <= daysInMonth; d++) {
+            var dateStr = fmtDate(calYear, calMonth, d);
+            var cellDate = new Date(calYear, calMonth, d);
+            var isPast = cellDate < today;
+            var isToday = cellDate.getTime() === today.getTime();
+            var status = dateStatus(dateStr);
+            var count = turnosForDate(dateStr).length;
+
+            var classes = 'cal-cell';
+            if (isPast && !isToday) classes += ' past';
+            if (isToday) classes += ' today';
+            if (status === 'available') classes += ' available';
+            else if (status === 'full') classes += ' full';
+            else if (status === 'mixed') classes += ' mixed';
+            if (activeDate === dateStr) classes += ' active-day';
+
+            html += '<div class="' + classes + '" data-date="' + dateStr + '" onclick="selectDate(\'' + dateStr + '\')">';
+            html += '<span class="day-num">' + d + '</span>';
+            if (count > 0) {
+                html += '<span class="day-count">' + count + ' turno' + (count !== 1 ? 's' : '') + '</span>';
+            }
+            html += '</div>';
+        }
+
+        html += '</div>';
+        container.innerHTML = html;
+
+        if (!activeDate) {
+            activeDate = fmtDate(today.getFullYear(), today.getMonth(), today.getDate());
+        }
+        showDayTurnos(activeDate);
+    }
+
+    function prevMonth() {
+        calMonth--;
+        if (calMonth < 0) { calMonth = 11; calYear--; }
+        activeDate = fmtDate(calYear, calMonth, 1);
+        renderCal();
+    }
+
+    function nextMonth() {
+        calMonth++;
+        if (calMonth > 11) { calMonth = 0; calYear++; }
+        activeDate = fmtDate(calYear, calMonth, 1);
+        renderCal();
+    }
+
+    function selectDate(dateStr) {
+        activeDate = dateStr;
+        document.querySelectorAll('.cal-cell').forEach(function(c) { c.classList.remove('active-day'); });
+        var el = document.querySelector('.cal-cell[data-date="' + dateStr + '"]');
+        if (el) el.classList.add('active-day');
+        showDayTurnos(dateStr);
+    }
+
+    function showDayTurnos(dateStr) {
+        var container = document.getElementById('day-turnos-list');
+        var title = document.getElementById('day-turnos-title');
+        var d = new Date(dateStr + 'T12:00:00');
+        var dayName = d.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+        title.textContent = 'Turnos del ' + dayName;
+
+        var turnos = turnosForDate(dateStr);
+        if (turnos.length === 0) {
+            container.innerHTML = '<p style="color:#718096; text-align:center; padding:2rem;">No hay turnos para esta fecha.</p>';
+            return;
+        }
+
+        turnos.sort(function(a, b) { return a.hora.localeCompare(b.hora); });
+        var html = '';
+        turnos.forEach(function(t) {
+            html += '<div class="turno-card" style="margin-bottom:0.75rem; display:flex; justify-content:space-between; align-items:center;">';
+            html += '<div>';
+            html += '<div class="turno-hora">' + t.hora + '</div>';
+            if (t.mascota) {
+                html += '<div><strong>Mascota:</strong> ' + t.mascota + ' (' + t.especie + ')</div>';
+                html += '<div><strong>Due\u00f1o:</strong> ' + t.dueno + '</div>';
+                if (t.tipo) html += '<div><strong>Tipo:</strong> ' + t.tipo + '</div>';
+            } else {
+                html += '<div style="color:#999;">Sin datos de mascota</div>';
+            }
+            html += '<div style="margin-top:0.3rem;"><span class="estado-' + t.estado + '">' + t.estado.charAt(0).toUpperCase() + t.estado.slice(1) + '</span></div>';
+            html += '</div>';
+            html += '<div style="display:flex; flex-direction:column; gap:0.4rem; min-width:130px;">';
+            if (t.mascota_id) {
+                html += '<a href="' + HISTORIA_URL.replace('0', t.mascota_id) + '" style="text-align:center; padding:0.4rem; background:#e0f0f0; color:#5ba4a4; border-radius:6px; text-decoration:none; font-weight:600; font-size:0.8rem;">Historia cl\u00ednica</a>';
+            }
+            if (t.estado === 'ocupado') {
+                html += '<form method="POST" action="' + REPROGRAMAR_URL.replace('0', t.id) + '" style="margin:0;" onsubmit="return confirm(\'\u00bfSolicitar reprogramaci\u00f3n?\')">' +
+                        '<button type="submit" style="width:100%; padding:0.4rem; background:#fff3e0; color:#e65100; border:1px solid #e65100; border-radius:6px; cursor:pointer; font-weight:600; font-size:0.8rem;">Reprogramar</button></form>';
+            }
+            html += '</div></div>';
+        });
+        container.innerHTML = html;
+    }
+
+    initCalendar();
+    </script>
+
+    {% elif vista == 'semana' or vista == 'dia' %}
+    <!-- ═══ DÍA / SEMANA: List grouped by day ═══ -->
+    {% if turnos %}
+        {% set fecha_actual = namespace(val=None) %}
+        {% for turno in turnos %}
+            {% if turno.fecha != fecha_actual.val %}
+                {% if fecha_actual.val is not none %}</div>{% endif %}
+                {% set fecha_actual.val = turno.fecha %}
+                <div class="dia-section">
+                <div class="dia-header">{{ turno.fecha.strftime('%A %d/%m/%Y') | capitalize }}</div>
+            {% endif %}
+
+            <div class="turno-card" style="margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <div class="turno-hora">{{ turno.hora.strftime('%H:%M') }}</div>
+                    {% if turno.mascota %}
+                        <div><strong>Mascota:</strong> {{ turno.mascota.nombre }} ({{ turno.mascota.especie }})</div>
+                        <div><strong>Dueño:</strong> {{ turno.dueno.nombre }} {{ turno.dueno.apellido }}</div>
+                        {% if turno.tipo_consulta %}
+                        <div><strong>Tipo:</strong> {{ turno.tipo_consulta }}</div>
+                        {% endif %}
+                    {% else %}
+                        <div style="color: #999;">Sin datos de mascota</div>
+                    {% endif %}
+                    <div style="margin-top: 0.4rem;">
+                        <span class="estado-{{ turno.estado }}">{{ turno.estado | capitalize }}</span>
+                    </div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 0.5rem; min-width: 140px;">
+                    {% if turno.mascota %}
+                    <a href="{{ url_for('veterinario.historia_clinica', mascota_id=turno.mascota_id) }}"
+                       style="text-align: center; padding: 0.5rem; background: #e0f0f0; color: #5ba4a4; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 0.85rem;">
+                        Historia clínica
+                    </a>
+                    {% endif %}
+                    {% if turno.estado == 'ocupado' %}
+                    <form method="POST" action="{{ url_for('veterinario.reprogramar_turno', id=turno.id) }}"
+                          onsubmit="return confirm('¿Solicitar reprogramación?')">
+                        <button type="submit" style="width:100%; padding: 0.5rem; background: #fff3e0; color: #e65100; border: 1px solid #e65100; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem;">
+                            Reprogramar
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+        </div>
+    {% else %}
+        <div style="text-align: center; padding: 3rem; color: #999; background:white; border-radius:14px; box-shadow:0 4px 20px rgba(0,0,0,0.07);">
+            <p style="font-size: 1.2rem;">No tenés turnos para este período.</p>
+        </div>
+    {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

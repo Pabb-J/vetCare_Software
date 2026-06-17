@@ -23,6 +23,26 @@
         {% endfor %}
     {% endwith %}
 
+    <!-- Filtro por nombre y categoría -->
+    <form method="GET" style="display:flex; gap:.8rem; margin-bottom:1.2rem; flex-wrap:wrap;">
+        <input type="text" name="busqueda" value="{{ busqueda }}" placeholder="Buscar por nombre..."
+               style="flex:1; min-width:180px; padding:.6rem .9rem; border:1px solid var(--border); border-radius:var(--radius-sm); font-size:.9rem;">
+        <select name="categoria" style="padding:.6rem .9rem; border:1px solid var(--border); border-radius:var(--radius-sm); font-size:.9rem;">
+            <option value="">Todas las categorías</option>
+            {% for c in categorias %}
+            <option value="{{ c }}" {% if c == categoria_activa %}selected{% endif %}>{{ c }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit"
+                style="background:var(--teal); color:#fff; border:none; padding:.6rem 1.2rem; border-radius:var(--radius-sm); font-weight:600; cursor:pointer;">
+            Filtrar
+        </button>
+        {% if busqueda or categoria_activa %}
+        <a href="{{ url_for('tienda.admin_productos') }}"
+           style="padding:.6rem 1rem; color:var(--text-muted); text-decoration:none; font-size:.9rem;">Limpiar</a>
+        {% endif %}
+    </form>
+
     <div style="background:var(--white); border-radius:var(--radius); box-shadow:var(--shadow-sm); overflow:hidden;">
 
         <!-- Cabecera -->
@@ -79,7 +99,11 @@
             {% endfor %}
         {% else %}
         <div style="text-align:center; padding:3rem; color:var(--text-muted);">
-            No hay productos registrados aún.
+            {% if busqueda or categoria_activa %}
+                No se encontraron productos con ese filtro.
+            {% else %}
+                No hay productos registrados aún.
+            {% endif %}
         </div>
         {% endif %}
     </div>

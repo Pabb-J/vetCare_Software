@@ -11,6 +11,7 @@ class Usuario(db.Model, UserMixin):
     correo = db.Column(db.String(150), unique=True, nullable=False)
     password_hash = db.Column(db.String(200), nullable=False)
     rol = db.Column(db.String(20), nullable=False)
+    activo = db.Column(db.Boolean, default=True)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
