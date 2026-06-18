@@ -1,6 +1,8 @@
 ﻿from flask import Flask, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager
+from flask_login import LoginManager, current_user
+from flask_admin import Admin
+from flask_admin.contrib.sqla import ModelView
 
 db = SQLAlchemy()
 login_manager = LoginManager()
@@ -28,6 +30,25 @@ def create_app():
         return ''
 
     from app.models.turno import Turno
+    from app.models.usuario import Usuario
+
+    class AdminView(ModelView):
+        def is_accessible(self):
+            return current_user.is_authenticated and current_user.rol == 'admin'
+        def inaccessible_callback(self, name, **kwargs):
+            return redirect(url_for('auth.login'))
+
+    admin = Admin(app, name='VetCare Admin')
+    admin.add_view(AdminView(Usuario, db.session))
+    admin.add_view(AdminView(Mascota, db.session))
+    admin.add_view(AdminView(Turno, db.session))
+    admin.add_view(AdminView(Diagnostico, db.session))
+    admin.add_view(AdminView(Tratamiento, db.session))
+    admin.add_view(AdminView(Medicamento, db.session))
+    admin.add_view(AdminView(Producto, db.session))
+    admin.add_view(AdminView(CarritoItem, db.session))
+    admin.add_view(AdminView(Compra, db.session))
+    admin.add_view(AdminView(CompraItem, db.session))
 
     from app.routes.auth import auth
     app.register_blueprint(auth)
