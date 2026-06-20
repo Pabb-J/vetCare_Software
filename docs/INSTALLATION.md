@@ -1,5 +1,3 @@
-Para que no reniegues, acá tenés el archivo **corregido por completo**. Copiá todo el bloque de acá abajo de un tirón, reemplazá lo que tenés en tu archivo local y metele ese `git commit` con total confianza:
-
 ```markdown
 # Manual de Instalación y Ejecución
 
