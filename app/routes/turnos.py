@@ -314,7 +314,7 @@ def cancelar_turno(id):
             flash('No tienes permiso para cancelar turnos.', 'error')
             return redirect(url_for('turnos.listar_turnos'))
         
-        turno.estado = 'disponible'
+        turno.estado = 'cancelado'
         turno.mascota_id = None
         turno.dueno_id = None
         
