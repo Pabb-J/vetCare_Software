@@ -126,12 +126,12 @@ def admin_reprogramar(id):
         nueva_fecha = datetime.strptime(request.form['fecha'], '%Y-%m-%d').date()
         nueva_hora = datetime.strptime(request.form['hora'], '%H:%M').time()
 
-        # Check if slot is available
+        # Check if slot is already occupied
         conflicto = Turno.query.filter(
             Turno.veterinario_id == turno.veterinario_id,
             Turno.fecha == nueva_fecha,
             Turno.hora == nueva_hora,
-            Turno.estado == 'ocupado',
+            Turno.estado.in_(['ocupado', 'reprogramar']),
             Turno.id != id
         ).first()
         if conflicto:
@@ -286,6 +286,11 @@ def agendar_turno():
     if request.method == 'POST':
         turno_id = request.form['turno_id']
         turno = Turno.query.get_or_404(turno_id)
+
+        if turno.estado != 'disponible':
+            flash('Ese turno ya fue reservado por otro usuario.', 'error')
+            return redirect(url_for('turnos.agendar_turno'))
+
         turno.estado = 'ocupado'
         turno.dueno_id = current_user.id
         turno.mascota_id = None

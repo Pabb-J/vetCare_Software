@@ -1,0 +1,33 @@
+import docx
+from docx.shared import Pt
+from docx.oxml.ns import qn
+
+doc = docx.Document(r'C:\Users\brian\Downloads\Grupo_4_TP2_entrega_4_ARREGLADO.docx')
+
+print('=== INDEX (paragraphs 1-40) ===')
+for i in range(1, 41):
+    if i >= len(doc.paragraphs):
+        break
+    p = doc.paragraphs[i]
+    t = p.text.strip()
+    a = str(p.alignment) if p.alignment is not None else 'None'
+    if t:
+        print(f'  [{i:3d}] {a:15s} | {t[:130]}')
+
+print()
+print('=== KEY PARAGRAPH ALIGNMENTS ===')
+for i in [36, 37, 42, 43, 44, 55, 61, 127, 176, 195, 197, 198]:
+    if i < len(doc.paragraphs):
+        p = doc.paragraphs[i]
+        t = p.text.strip()[:90]
+        a = str(p.alignment) if p.alignment is not None else 'None'
+        print(f'  [{i:3d}] {a:15s} | {t}')
+
+print()
+print('=== TABLE FORMAT CHECK ===')
+for ti, table in enumerate(doc.tables[:5]):
+    tbl = table._tbl
+    tblPr = tbl.tblPr
+    borders = tblPr.findall(qn('w:tblBorders')) if tblPr is not None else []
+    first = table.rows[0].cells[0].text.strip()[:40]
+    print(f'  Table {ti}: borders={len(borders)} rows={len(table.rows)} first="{first}"')
