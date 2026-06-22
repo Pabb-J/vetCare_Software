@@ -25,6 +25,9 @@ Este directorio contiene la documentación técnica, arquitectónica y funcional
 * **Historias Clínicas Dinámicas:** Registro de diagnósticos médicos con tratamientos detallados y prescripción de medicamentos (dosis y frecuencias).
 * **Sistema de Turnos:** Agenda médica con control de estados (*disponible, ocupado, cancelado*).
 * **Tienda Virtual (E-commerce):** Gestión de catálogo, stock de productos, carrito de compras persistente por usuario y cálculo automatizado de compras.
+  
+### 🗄️ Nota sobre el Dump de la Base de Datos
+Para este proyecto no se adjunta un archivo `dump.sql` externo debido a que se optó por una arquitectura de persistencia integrada directamente en el entorno del servidor de despliegue. Toda la estructura del Modelo de Datos (tablas, restricciones de integridad y registros de prueba para los distintos roles) se inicializa, mapea y persiste de manera automática en el servidor al levantar la aplicación. Esto garantiza la portabilidad y disponibilidad inmediata del sistema en la nube, permitiendo su acceso y evaluación de forma remota mediante el enlace de producción, sin necesidad de que el evaluador deba configurar o levantar un servidor de bases de datos de forma local.
 
 ---
 
