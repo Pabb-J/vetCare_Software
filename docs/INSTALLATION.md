@@ -92,6 +92,14 @@ Cuando la terminal indique que el servidor está corriendo, abrí tu navegador w
 
 ---
 
+---
+> **💡 ¿No querés ejecutarlo localmente?**  
+> La aplicación ya está desplegada en **Render** y disponible 24/7 en:  
+> 👉 **[https://vetcare-software.onrender.com](https://vetcare-software.onrender.com)**  
+> Usá el usuario admin: `admin@vetcare.com` / `admin123` para explorarla.
+
+---
+
 ## 🛑 Cómo Detener el Servidor
 Para apagar el servidor de Flask en cualquier momento, presioná la combinación de teclas **`Ctrl + C`** en la terminal. 
 
