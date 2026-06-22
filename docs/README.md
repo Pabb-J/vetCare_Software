@@ -3,9 +3,9 @@
 Este directorio contiene la documentación técnica, arquitectónica y funcional del sistema **VetCare_Software**.
 
 ## Contenido
-- [Manual de instalación](docs/INSTALLATION.md)
-- [Arquitectura del sistema](docs/ARCHITECTURE.md)
-- [Manual de usuario](docs/USER_MANUAL.md)
+- [Manual de instalación](INSTALLATION.md)
+- [Arquitectura del sistema](ARCHITECTURE.md)
+- [Manual de usuario](USER_MANUAL.md)
 
 ---
 
@@ -31,6 +31,6 @@ Este directorio contiene la documentación técnica, arquitectónica y funcional
 ### Cómo usar esta documentación
 Cada archivo dentro de este espacio está orientado a un público distinto para facilitar la evaluación y el despliegue del proyecto integrador:
 
-- **[INSTALLATION.md](docs/INSTALLATION.md)** → **Guía técnica** paso a paso para clonar, configurar el entorno virtual (`venv`), instalar dependencias (`requirements.txt`) y ejecutar el sistema en entorno local.
-- **[ARCHITECTURE.md](docs/ARCHITECTURE.md)** → **Explicación técnica** de la estructura interna del código, la relación de los modelos de la base de datos (ORMs) y el flujo de rutas del patrón MVC.
-- **[USER_MANUAL.md](docs/USER_MANUAL.md)** → **Guía práctica** orientada a los usuarios finales, detallando el flujo de trabajo según el rol asignado (cómo atiende un veterinario, cómo compra o saca turno un cliente).
+- **[INSTALLATION.md](INSTALLATION.md)** → **Guía técnica** paso a paso para clonar, configurar el entorno virtual (`venv`), instalar dependencias (`requirements.txt`) y ejecutar el sistema en entorno local.
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** → **Explicación técnica** de la estructura interna del código, la relación de los modelos de la base de datos (ORMs) y el flujo de rutas del patrón MVC.
+- **[USER_MANUAL.md](USER_MANUAL.md)** → **Guía práctica** orientada a los usuarios finales, detallando el flujo de trabajo según el rol asignado (cómo atiende un veterinario, cómo compra o saca turno un cliente).
