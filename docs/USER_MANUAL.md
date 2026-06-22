@@ -28,7 +28,7 @@ Una cuenta activa con su correspondiente correo electrónico y contraseña.
 
 3.1. Inicio de Sesión (Login)
 
-Abra el navegador web y acceda a la URL de la clínica (por defecto en desarrollo: http://localhost:5000).
+Abra el navegador web y acceda a la URL de la clínica https://vetcare-software.onrender.com
 
 En la pantalla de bienvenida, ingrese su correo electrónico y contraseña.
 
