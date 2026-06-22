@@ -1,61 +1,34 @@
 # Arquitectura del Sistema VetCare_Software
 
-Este documento describe la estructura interna del proyecto y cómo se organizan sus componentes principales.
+Este documento describe la estructura interna del proyecto, la organización de sus componentes principales y el flujo de datos bajo el patrón MVC (Modelo-Vista-Controlador).
 
 ---
 
-## Estructura de carpetas
+## 📁 Estructura de Carpetas Real
 
+El proyecto está estructurado de forma modular dentro del directorio principal `app/`, distribuyendo las responsabilidades de la siguiente manera:
+
+```text
 vetCare_Software/
 │
 ├── app/
-│   ├── init.py        # Inicializa la aplicación Flask y registra blueprints
-│   ├── models/            # Modelos de datos (ej: Turno, Mascota, Usuario)
-│   ├── routes/            # Rutas y controladores (ej: turnos.py, usuarios.py)
-│   ├── templates/         # Plantillas HTML (interfaz de usuario)
-│   ├── static/            # Archivos estáticos (CSS, JS, imágenes)
+│   ├── __init__.py        # Inicializa Flask, SQLAlchemy, LoginManager y Blueprints
+│   │
+│   # Módulos y Modelos de Entidades (Capa del Modelo)
+│   ├── usuario.py         # Modelo de Usuarios (Autenticación, Roles y Hash)
+│   ├── mascota.py         # Modelo de Pacientes (Especie, Raza, Dueño)
+│   ├── turno.py           # Modelo de Agenda de Turnos y Estados
+│   ├── tienda.py          # Modelos de E-commerce (Producto, Carrito, Compra)
+│   ├── historia_clinica.py# Modelos Médicos (Diagnóstico, Tratamiento, Medicamento)
+│   │
+│   ├── routes/            # Capa del Controlador (Lógica de negocio y Blueprints)
+│   │   ├── turnos.py      # Rutas para gestión de citas
+│   │   ├── usuarios.py    # Rutas para login, registro y perfiles
+│   │   └── [otras rutas]  # Rutas de tienda, historias clínicas, etc.
+│   │
+│   ├── templates/         # Capa de la Vista (Interfaz de Usuario / Jinja2)
+│   └── static/            # Archivos estáticos del Frontend (CSS, JS, Bootstrap)
 │
-├── requirements.txt       # Dependencias del proyecto
-├── run.py                 # Punto de entrada para ejecutar la aplicación
-└── docs/                  # Documentación del proyecto
-
-## Codigo
-
----
-
-## Componentes principales
-
-- **Flask App (`app/__init__.py`)**  
-  Configura la aplicación, inicializa extensiones y registra los módulos (blueprints).
-
-- **Modelos (`app/models/`)**  
-  Contienen las clases que representan las entidades del sistema (ejemplo: `Turno`, `Mascota`, `Usuario`).  
-  Se utilizan con SQLite para persistencia de datos.
-
-- **Rutas (`app/routes/`)**  
-  Definen la lógica de negocio y las URL disponibles.  
-  Ejemplo: `turnos.py` maneja creación, listado y cancelación de turnos.
-
-- **Templates (`app/templates/`)**  
-  Archivos HTML que renderizan la interfaz de usuario.  
-  Usan Jinja2 para mostrar datos dinámicos.
-
-- **Static (`app/static/`)**  
-  Archivos CSS, JavaScript y recursos gráficos que complementan la interfaz.
-
----
-
-## Flujo de ejecución
-
-1. El usuario accede a la aplicación vía navegador.  
-2. Flask recibe la petición y la redirige al blueprint correspondiente.  
-3. El blueprint consulta o modifica datos en los modelos.  
-4. Se renderiza una plantilla HTML con los resultados.  
-5. El usuario visualiza la respuesta en el navegador.
-
----
-
-## Notas
-- La modularidad con **blueprints** permite escalar el sistema agregando nuevos módulos (ej: facturación, reportes).  
-- La carpeta `docs/` centraliza toda la documentación técnica y funcional.
-
+├── requirements.txt       # Dependencias y librerías del proyecto
+├── run.py                 # Punto de entrada principal para ejecutar la aplicación
+└── docs/                  # Documentación técnica y funcional del proyecto
