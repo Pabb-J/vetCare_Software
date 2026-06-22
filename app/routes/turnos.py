@@ -233,51 +233,7 @@ def admin_reactivar_veterinario(id):
     flash(f'Veterinario {vet.nombre} {vet.apellido} reactivado.', 'success')
     return redirect(url_for('turnos.admin_veterinarios'))
 
-# ─── Admin: crear turno específico ───
-@turnos.route('/admin/turnos/crear', methods=['GET', 'POST'])
-@login_required
-def admin_crear_turno():
-    if current_user.rol != 'admin':
-        flash('Acceso no autorizado.', 'error')
-        return redirect(url_for('auth.dashboard'))
 
-    if request.method == 'POST':
-        veterinario_id = int(request.form['veterinario_id'])
-        dueno_id = int(request.form['dueno_id'])
-        mascota_id = request.form.get('mascota_id')
-        fecha = datetime.strptime(request.form['fecha'], '%Y-%m-%d').date()
-        hora = datetime.strptime(request.form['hora'], '%H:%M').time()
-
-        # Check slot not occupied
-        conflicto = Turno.query.filter(
-            Turno.veterinario_id == veterinario_id,
-            Turno.fecha == fecha,
-            Turno.hora == hora,
-            Turno.estado == 'ocupado'
-        ).first()
-        if conflicto:
-            flash('Ese horario ya está ocupado.', 'error')
-            return redirect(url_for('turnos.admin_crear_turno'))
-
-        turno = Turno(
-            fecha=fecha, hora=hora,
-            veterinario_id=veterinario_id,
-            dueno_id=dueno_id if dueno_id else None,
-            mascota_id=int(mascota_id) if mascota_id else None,
-            estado='ocupado'
-        )
-        db.session.add(turno)
-        db.session.commit()
-        flash('Turno creado exitosamente.', 'success')
-        return redirect(url_for('turnos.admin_turnos'))
-
-    veterinarios = Usuario.query.filter_by(rol='veterinario', activo=True).all()
-    duenos = Usuario.query.filter_by(rol='dueno', activo=True).all()
-    mascotas = Mascota.query.all()
-    return render_template('turnos/admin_crear_turno.html',
-                           veterinarios=veterinarios,
-                           duenos=duenos,
-                           mascotas=mascotas)
 
 @turnos.route('/turnos/agendar', methods=['GET','POST'])
 @login_required
