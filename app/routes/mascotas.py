@@ -4,6 +4,9 @@ from app import db
 from app.models.mascota import Mascota
 from app.models.usuario import Usuario
 from app.models.historia_clinica import Diagnostico
+import logging
+
+logger = logging.getLogger(__name__)
 
 mascotas = Blueprint('mascotas', __name__)
 
@@ -38,11 +41,20 @@ def agregarMascota():
             flash('No existe ese dueño')
             return redirect(url_for('mascotas.agregarMascota')) 
 
+        logger.info(f"Adding mascota for dueno: {dueno.nombre} {dueno.apellido} (ID: {dueno.id})")
         nuevaMascota = Mascota(nombre= nombre, especie=especie, raza=raza, edad=edad, peso=peso, dueno_id = dueno.id)
         db.session.add(nuevaMascota)
-        db.session.commit()
-        flash('Mascota agregada exitosamente!')
-        return redirect(url_for('mascotas.listar'))
+        
+        try:
+            db.session.commit()
+            logger.info(f"Mascota added successfully with ID: {nuevaMascota.id}")
+            flash('Mascota agregada exitosamente!')
+            return redirect(url_for('mascotas.listar'))
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Error adding mascota: {e}")
+            flash(f'Error al agregar mascota: {str(e)}')
+            return redirect(url_for('mascotas.agregarMascota'))
     return render_template('mascotas/agregar.html')
 
 
