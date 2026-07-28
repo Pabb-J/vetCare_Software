@@ -3,7 +3,15 @@ from flask_login import login_user, logout_user, login_required, current_user
 from app import db
 from app.models.usuario import Usuario
 import logging
+import sys
 
+# Configure logging to output to stdout for Railway
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    stream=sys.stdout,
+    force=True
+)
 logger = logging.getLogger(__name__)
 
 auth = Blueprint('auth', __name__)

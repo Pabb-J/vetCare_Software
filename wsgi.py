@@ -1,8 +1,14 @@
 from app import create_app, db
 from app.models.usuario import Usuario
 import logging
+import sys
 
-logging.basicConfig(level=logging.INFO)
+# Configure logging to output to stdout for Railway
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    stream=sys.stdout
+)
 logger = logging.getLogger(__name__)
 
 app = create_app()

@@ -5,7 +5,15 @@ from app.models.mascota import Mascota
 from app.models.usuario import Usuario
 from app.models.historia_clinica import Diagnostico
 import logging
+import sys
 
+# Configure logging to output to stdout for Railway
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    stream=sys.stdout,
+    force=True
+)
 logger = logging.getLogger(__name__)
 
 mascotas = Blueprint('mascotas', __name__)
