@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 from flask_login import login_required, current_user
 from app import db
 from app.models.turno import Turno
@@ -7,6 +7,8 @@ from app.models.mascota import Mascota
 from app.models.historia_clinica import Diagnostico, Tratamiento, Medicamento
 from datetime import date, timedelta
 from functools import wraps
+import re
+from sqlalchemy import func
 
 veterinario = Blueprint('veterinario', __name__)
 
@@ -97,12 +99,23 @@ def perfil():
 @solo_veterinario
 def registrar_mascota():
     if request.method == 'POST':
-        dueno_dni = request.form.get('dueno_dni', '').strip()
+        dueno_dni_raw = request.form.get('dueno_dni', '')
+        # normalizamos el input: dejamos solo dígitos
+        dueno_dni = re.sub(r'\D', '', dueno_dni_raw).strip()
+
         dueno = None
         if dueno_dni:
+            # intento exacto primero sobre la columna tal cual
             dueno = Usuario.query.filter_by(dni=dueno_dni).first()
             if not dueno:
+                # fallback: comparar con la versión normalizada de Usuario.dni en la BD
+                normalized_db_dni = func.replace(func.replace(func.replace(func.replace(Usuario.dni, '.', ''), '-', ''), ' ', ''), '/', '')
+                dueno = Usuario.query.filter(normalized_db_dni == dueno_dni).first()
+
+            if not dueno:
                 flash('No se encontró un dueño con ese DNI. La mascota se registrará sin dueño.', 'error')
+            else:
+                flash(f'Dueño encontrado: {dueno.nombre} {dueno.apellido} (DNI {dueno.dni}).', 'success')
 
         mascota = Mascota(
             nombre=request.form['nombre'],
@@ -112,9 +125,15 @@ def registrar_mascota():
             peso=float(request.form['peso']),
             dueno_id=dueno.id if dueno else None
         )
+
+        current_app.logger.info(f"Registrando mascota: nombre={mascota.nombre}, dueno_dni_raw={dueno_dni_raw}, dueno_dni_normalized={dueno_dni}, dueno_id={(dueno.id if dueno else None)}")
         db.session.add(mascota)
         db.session.commit()
-        flash(f'Mascota "{mascota.nombre}" registrada correctamente.', 'success')
+
+        if dueno:
+            flash(f'Mascota "{mascota.nombre}" registrada y asignada a {dueno.nombre} {dueno.apellido}.', 'success')
+        else:
+            flash(f'Mascota "{mascota.nombre}" registrada (sin dueño asignado).', 'warning')
         return redirect(url_for('veterinario.agenda'))
 
     duenos = Usuario.query.filter_by(rol='dueno').all()
@@ -206,7 +225,7 @@ def historia_clinica(mascota_id):
                            mascota=mascota,
                            diagnosticos=diagnosticos)
 
-# ─── Editar diagnóstico ────────────────────────────────────────────────────────
+# ─── Editar diagnóstico ──────────────────────────────────────────────────────
 @veterinario.route('/veterinario/diagnostico/editar/<int:id>', methods=['GET', 'POST'])
 @login_required
 @solo_veterinario
@@ -220,7 +239,7 @@ def editar_diagnostico(id):
         return redirect(url_for('veterinario.historia_clinica', mascota_id=diagnostico.mascota_id))
     return render_template('veterinario/editar_diagnostico.html', diagnostico=diagnostico)
 
-# ─── Editar tratamiento ────────────────────────────────────────────────────────
+# ─── Editar tratamiento ──────────────────────────────────────────────────────
 @veterinario.route('/veterinario/tratamiento/editar/<int:id>', methods=['GET', 'POST'])
 @login_required
 @solo_veterinario
@@ -235,7 +254,7 @@ def editar_tratamiento(id):
         return redirect(url_for('veterinario.historia_clinica', mascota_id=tratamiento.diagnostico.mascota_id))
     return render_template('veterinario/editar_tratamiento.html', tratamiento=tratamiento)
 
-# ─── Editar medicamento ────────────────────────────────────────────────────────
+# ─── Editar medicamento ──────────────────────────────────────────────────────
 @veterinario.route('/veterinario/medicamento/editar/<int:id>', methods=['GET', 'POST'])
 @login_required
 @solo_veterinario
