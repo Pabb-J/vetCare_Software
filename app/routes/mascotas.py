@@ -4,17 +4,6 @@ from app import db
 from app.models.mascota import Mascota
 from app.models.usuario import Usuario
 from app.models.historia_clinica import Diagnostico
-import logging
-import sys
-
-# Configure logging to output to stdout for Railway
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    stream=sys.stdout,
-    force=True
-)
-logger = logging.getLogger(__name__)
 
 mascotas = Blueprint('mascotas', __name__)
 
@@ -43,24 +32,28 @@ def agregarMascota():
         edad = request.form['edad']
         peso = request.form['peso']
         dueno_dni = request.form['dueno_dni']
+        
+        print(f"DEBUG: Buscando dueño con DNI: {dueno_dni}")
         dueno = Usuario.query.filter_by(dni = dueno_dni).first()
+        print(f"DEBUG: Dueño encontrado: {dueno}")
 
         if not dueno:
+            print(f"DEBUG: No existe dueño con DNI: {dueno_dni}")
             flash('No existe ese dueño')
             return redirect(url_for('mascotas.agregarMascota')) 
 
-        logger.info(f"Adding mascota for dueno: {dueno.nombre} {dueno.apellido} (ID: {dueno.id})")
+        print(f"DEBUG: Agregando mascota para dueño: {dueno.nombre} {dueno.apellido} (ID: {dueno.id})")
         nuevaMascota = Mascota(nombre= nombre, especie=especie, raza=raza, edad=edad, peso=peso, dueno_id = dueno.id)
         db.session.add(nuevaMascota)
         
         try:
             db.session.commit()
-            logger.info(f"Mascota added successfully with ID: {nuevaMascota.id}")
+            print(f"DEBUG: Mascota agregada exitosamente con ID: {nuevaMascota.id}")
             flash('Mascota agregada exitosamente!')
             return redirect(url_for('mascotas.listar'))
         except Exception as e:
             db.session.rollback()
-            logger.error(f"Error adding mascota: {e}")
+            print(f"DEBUG: Error al agregar mascota: {e}")
             flash(f'Error al agregar mascota: {str(e)}')
             return redirect(url_for('mascotas.agregarMascota'))
     return render_template('mascotas/agregar.html')

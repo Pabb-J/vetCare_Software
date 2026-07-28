@@ -2,17 +2,6 @@ from flask import Blueprint, render_template, redirect, url_for, request, flash
 from flask_login import login_user, logout_user, login_required, current_user
 from app import db
 from app.models.usuario import Usuario
-import logging
-import sys
-
-# Configure logging to output to stdout for Railway
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    stream=sys.stdout,
-    force=True
-)
-logger = logging.getLogger(__name__)
 
 auth = Blueprint('auth', __name__)
 
@@ -80,9 +69,9 @@ def perfil_dueno():
     from app.models.mascota import Mascota
     turnos = Turno.query.filter_by(dueno_id=current_user.id).order_by(Turno.fecha, Turno.hora).all()
     mascotas = Mascota.query.filter_by(dueno_id=current_user.id).all()
-    logger.info(f"User {current_user.id} ({current_user.correo}) has {len(mascotas)} mascotas")
+    print(f"DEBUG: Usuario {current_user.id} ({current_user.correo}) tiene {len(mascotas)} mascotas")
     for mascota in mascotas:
-        logger.info(f"  - Mascota: {mascota.nombre} (ID: {mascota.id})")
+        print(f"DEBUG:  - Mascota: {mascota.nombre} (ID: {mascota.id}, dueno_id: {mascota.dueno_id})")
     return render_template('perfil_dueno.html', turnos=turnos, mascotas=mascotas)
 
 
