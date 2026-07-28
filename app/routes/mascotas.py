@@ -1,9 +1,10 @@
-from flask import Blueprint, render_template, redirect, url_for, request, flash
+from flask import Blueprint, render_template, redirect, url_for, request, flash, current_app
 from flask_login import login_required, current_user
 from app import db
 from app.models.mascota import Mascota
 from app.models.usuario import Usuario
 from app.models.historia_clinica import Diagnostico
+import re
 
 mascotas = Blueprint('mascotas', __name__)
 
@@ -31,14 +32,32 @@ def agregarMascota():
         raza = request.form['raza']
         edad = request.form['edad']
         peso = request.form['peso']
-        dueno_dni = request.form['dueno_dni']
-        dueno = Usuario.query.filter_by(dni = dueno_dni).first()
+
+        dueno_dni_raw = request.form.get('dueno_dni', '')
+        dueno_dni = re.sub(r'\D', '', dueno_dni_raw).strip()
+
+        dueno = None
+        if dueno_dni:
+            dueno = Usuario.query.filter_by(dni = dueno_dni).first()
+            if not dueno:
+                dueno = Usuario.query.filter(Usuario.dni.like(f"%{dueno_dni}%")).first()
 
         if not dueno:
-            flash('No existe ese dueño')
+            flash('No existe ese dueño', 'error')
             return redirect(url_for('mascotas.agregarMascota')) 
 
-        nuevaMascota = Mascota(nombre= nombre, especie=especie, raza=raza, edad=edad, peso=peso, dueno_id = dueno.id)
+        # Convertir tipos antes de crear la mascota
+        try:
+            edad_val = int(edad)
+        except Exception:
+            edad_val = 0
+        try:
+            peso_val = float(peso)
+        except Exception:
+            peso_val = 0.0
+
+        nuevaMascota = Mascota(nombre= nombre, especie=especie, raza=raza, edad=edad_val, peso=peso_val, dueno_id = dueno.id)
+        current_app.logger.info(f"Agregar mascota: nombre={nombre}, dueno_dni_raw={dueno_dni_raw}, dueno_id={dueno.id}")
         db.session.add(nuevaMascota)
         db.session.commit()
         flash('Mascota agregada exitosamente!')
